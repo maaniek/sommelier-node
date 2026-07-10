@@ -379,30 +379,26 @@
   }
 
   /* ============ MOBILE APP EMBED ============ */
+  /* No extra bezel here — the app renders its own device frame internally.
+     Section background matches the app's own page background (#D8EAE0) so
+     the embed sits flush, as if it were just part of that page. */
 
-  .phone-frame-outer { display: flex; justify-content: center; margin-top: 56px; }
-  .phone-frame {
-    width: 380px;
+  .app-section {
+    background: #D8EAE0;
+  }
+
+  .app-embed-frame {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
+  }
+  .app-embed-frame iframe {
+    flex: 0 0 480px;
+    width: 480px;
     max-width: 100%;
-    background: var(--ink);
-    border-radius: 44px;
-    padding: 14px;
-  }
-  .phone-frame .notch {
-    width: 120px; height: 22px;
-    background: var(--ink);
-    border-radius: 0 0 14px 14px;
-    margin: 0 auto;
-    position: relative; z-index: 2;
-  }
-  .phone-screen {
-    background: #fff;
-    border-radius: 32px;
-    overflow: hidden;
-    margin-top: -22px;
-  }
-  .phone-screen iframe {
-    width: 100%; height: 700px; border: none; display: block;
+    height: 780px;
+    border: none;
+    display: block;
   }
 
   /* ============ SHIPPED (benefits pattern) ============ */
@@ -603,18 +599,13 @@
   <p>Now, on mobile.</p>
 </div>
 
-<!-- ============ MOBILE APP EMBED (plain) ============ -->
-<section class="plain-section" id="app-embed">
+<!-- ============ MOBILE APP EMBED ============ -->
+<section class="plain-section app-section" id="app-embed">
   <div class="section-inner">
     <h2>The mobile app</h2>
 
-    <div class="phone-frame-outer">
-      <div class="phone-frame">
-        <div class="notch"></div>
-        <div class="phone-screen">
-          <iframe src="app/index.html" title="Live mobile app prototype" loading="lazy"></iframe>
-        </div>
-      </div>
+    <div class="app-embed-frame">
+      <iframe src="app/index.html" title="Live mobile app prototype" loading="lazy"></iframe>
     </div>
     <p class="embed-caption">Tap through 4 real screens — service view, bottle detail, analytics, settings.</p>
   </div>
