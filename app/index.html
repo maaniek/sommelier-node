@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sommelier Node — App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;1,300&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ─── Reset ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+button { background: none; border: none; cursor: pointer; font: inherit; }
+
+/* ─── Tokens ─────────────────────────────────────── */
+:root {
+  --green:        #009A3B;
+  --green-bright: #00C44A;
+  --green-dim:    rgba(0,154,59,0.10);
+  --green-mid:    rgba(0,154,59,0.20);
+  --amber:        #C07A08;
+  --amber-dim:    rgba(192,122,8,0.10);
+  --red:          #C0302A;
+  --red-dim:      rgba(192,48,42,0.10);
+
+  --bg:           #F2F8F4;
+  --surface:      #FFFFFF;
+  --surface-2:    #F7FAF8;
+  --border:       #D4E8DC;
+  --border-hi:    #B4D4C0;
+
+  --text:         #0F1E14;
+  --text-muted:   #3A6044;
+  --text-dim:     #6A8E74;
+
+  --device-bg:    #DEDEDE;
+  --device-ring:  #C8C8C8;
+
+  font-family: 'Source Sans 3', sans-serif;
+}
+
+/* ─── Page scaffold ──────────────────────────────── */
+body {
+  background: #D8EAE0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.device-scaler {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ─── Device shell ───────────────────────────────── */
+.device {
+  width: 375px;
+  background: var(--device-bg);
+  border-radius: 52px;
+  padding: 14px;
+  box-shadow:
+    0 0 0 1px var(--device-ring),
+    0 32px 64px rgba(0,0,0,0.18),
+    inset 0 0 0 1px rgba(255,255,255,0.5);
+  position: relative;
+}
+
+.device-screen {
+  background: var(--bg);
+  border-radius: 42px;
+  overflow: hidden;
+  height: 780px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Dynamic island */
+.island {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 34px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 100;
+}
+
+/* ─── Status bar ──────────────────────────────────── */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 58px 24px 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+.status-time { font-size: 15px; font-weight: 600; }
+.status-icons { display: flex; gap: 6px; align-items: center; }
+.status-icons svg { opacity: 0.85; }
+
+/* ─── Screens ────────────────────────────────────── */
+.screen {
+  display: none;
+  flex: 1;
+  overflow: hidden;
+  flex-direction: column;
+}
+.screen.active { display: flex; }
+
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 20px 36px;
+  scrollbar-width: none;
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+
+/* ─── Screen header ──────────────────────────────── */
+.screen-head {
+  padding: 10px 20px 20px;
+  flex-shrink: 0;
+}
+.screen-title {
+  font-family: 'Merriweather', serif;
+  font-weight: 300;
+  font-size: 30px;
+  color: var(--text);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+.screen-title em {
+  font-style: normal;
+  color: var(--green);
+}
+.screen-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+/* ─── Back nav ───────────────────────────────────── */
+.back-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 16px 12px;
+  flex-shrink: 0;
+}
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ─── Status group headers ───────────────────────── */
+.group-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 22px 4px 10px;
+}
+.group-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.group-dot.ready   { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.group-dot.almost  { background: var(--amber); }
+.group-dot.active  { background: var(--text-dim); border: 1.5px solid var(--text-dim); }
+.group-dot.idle    { background: transparent; border: 1.5px solid var(--text-dim); }
+
+/* ─── Node cards ─────────────────────────────────── */
+.node-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: background 150ms, border-color 150ms;
+}
+.node-card:hover { background: var(--surface-2); border-color: var(--border-hi); }
+.node-card.ready-card { border-color: rgba(0,154,59,0.3); background: rgba(0,154,59,0.07); }
+.node-card.ready-card:hover { background: rgba(0,154,59,0.12); }
+.node-card.almost-card { border-color: rgba(212,133,10,0.25); background: rgba(212,133,10,0.06); }
+
+.node-info { flex: 1; min-width: 0; }
+.node-wine {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.node-meta {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+.node-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 11px;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+.badge-ready   { background: var(--green-dim); color: var(--green); }
+.badge-almost  { background: var(--amber-dim); color: var(--amber); }
+.badge-active  { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+.badge-idle    { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+
+/* Mini ring in card */
+.mini-ring-wrap { flex-shrink: 0; }
+
+/* Idle section toggle */
+.idle-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px;
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.idle-rows { display: none; }
+.idle-rows.open { display: block; }
+
+/* ─── BOTTLE DETAIL ──────────────────────────────── */
+#s-detail .scroll-area { padding-top: 0; }
+
+.detail-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0 8px;
+}
+.detail-table-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+.big-ring-wrap { position: relative; margin-bottom: 12px; }
+.big-ring-wrap svg { display: block; }
+.ring-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+.ring-pct {
+  font-family: 'Merriweather', serif;
+  font-weight: 300;
+  font-size: 38px;
+  color: var(--text);
+  display: block;
+  line-height: 1;
+}
+.ring-meta {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.ring-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.ring-time {
+  font-size: 20px;
+  color: var(--green);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* Detail stats grid */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.detail-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+.detail-stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.detail-stat-value {
+  font-size: 22px;
+  color: var(--text);
+  font-weight: 300;
+}
+.detail-stat-value span {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.temp-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 5px;
+  letter-spacing: 0.04em;
+}
+.temp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Sparkline section */
+.sparkline-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 18px 14px;
+  margin-bottom: 20px;
+}
+.spark-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+.spark-title {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.spark-current {
+  font-size: 22px;
+  color: var(--text);
+  font-weight: 300;
+}
+.spark-current span { font-size: 12px; color: var(--text-muted); }
+
+/* CTA button */
+.btn-primary {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  border: 1.5px solid var(--green);
+  border-radius: 99px;
+  color: var(--green);
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: background 200ms, color 200ms;
+  margin-top: 4px;
+}
+.btn-primary:hover { background: var(--green); color: #fff; }
+
+/* ─── INSIGHTS ────────────────────────────────────── */
+.toggle-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+.toggle-btn {
+  padding: 7px 16px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 150ms;
+}
+.toggle-btn.active {
+  background: var(--green-dim);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+/* Big donut */
+.donut-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.donut-wrap { position: relative; }
+.donut-wrap svg { display: block; }
+.donut-inner {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.donut-pct {
+  font-family: 'Merriweather', serif;
+  font-weight: 300;
+  font-size: 32px;
+  color: var(--text);
+  display: block;
+  line-height: 1;
+}
+.donut-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+.donut-title {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+/* KPI chips */
+.kpi-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.kpi-chip {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 10px;
+  text-align: center;
+}
+.kpi-value {
+  font-size: 22px;
+  color: var(--text);
+  font-weight: 300;
+  display: block;
+}
+.kpi-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* Chart card */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 12px;
+}
+.chart-title {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 18px;
+}
+
+/* Horizontal bars */
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.bar-name {
+  width: 110px;
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+.bar-track {
+  flex: 1;
+  background: var(--border);
+  border-radius: 99px;
+  height: 6px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 99px;
+  transform-origin: left;
+  animation: bar-grow 0.8s ease-out both;
+}
+@keyframes bar-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.bar-count {
+  font-size: 13px;
+  color: var(--text-muted);
+  width: 18px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Volume chart (column bars) */
+.vol-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 56px;
+  margin-top: 8px;
+}
+.vol-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.vol-bar {
+  width: 100%;
+  background: var(--green);
+  border-radius: 4px 4px 0 0;
+  opacity: 0.7;
+  transition: opacity 150ms;
+}
+.vol-bar:hover { opacity: 1; }
+.vol-label { font-size: 10px; color: var(--text-muted); margin-top: 6px; }
+
+/* Small donut + text */
+.mini-donut-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.mini-donut-text {}
+.mini-donut-pct {
+  font-size: 24px;
+  color: var(--text);
+  font-weight: 300;
+}
+.mini-donut-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+/* ─── LOG ────────────────────────────────────────── */
+.log-head-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+.log-count { font-size: 12px; color: var(--text-dim); }
+
+.log-item {
+  display: flex;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.log-time {
+  font-size: 13px;
+  color: var(--text-dim);
+  width: 44px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.log-body { flex: 1; }
+.log-wine { font-size: 14px; color: var(--text); font-weight: 500; }
+.log-detail { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+.log-status {
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.log-ok   { color: var(--green); }
+.log-late { color: var(--amber); }
+.log-miss { color: var(--red); }
+
+/* ─── SETTINGS ───────────────────────────────────── */
+.settings-section-title {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  padding: 24px 4px 10px;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 6px;
+}
+.settings-row-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--green-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.settings-row-info { flex: 1; }
+.settings-row-label { font-size: 14px; color: var(--text); font-weight: 500; }
+.settings-row-sub { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+.settings-chevron { color: var(--text-dim); }
+
+/* Toggle switch */
+.toggle-switch {
+  width: 44px;
+  height: 26px;
+  background: var(--green);
+  border-radius: 13px;
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 200ms;
+}
+.toggle-switch.off { background: var(--border); }
+.toggle-switch.off::after { transform: translateX(-18px); }
+
+/* Node battery row */
+.node-device-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 6px;
+}
+.node-device-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 5px var(--green);
+  flex-shrink: 0;
+}
+.node-device-name { flex: 1; font-size: 13px; color: var(--text); }
+.node-device-bat { font-size: 11px; color: var(--text-muted); }
+
+/* ─── Bottom nav ─────────────────────────────────── */
+.bottom-nav {
+  flex-shrink: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 8px 8px 28px;
+  display: flex;
+  justify-content: space-around;
+}
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  color: var(--text-dim);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  transition: color 150ms;
+  cursor: pointer;
+}
+.nav-btn.active { color: var(--green); }
+.nav-btn svg { flex-shrink: 0; }
+
+/* ─── Animations ─────────────────────────────────── */
+@keyframes pulse-ring {
+  0%,100% { box-shadow: 0 0 0 0 var(--green-glow); }
+  50%      { box-shadow: 0 0 0 6px transparent; }
+}
+.ready-pulse { animation: pulse-ring 2s ease-in-out infinite; }
+
+@keyframes spin-ring {
+  from { stroke-dashoffset: var(--ring-from); }
+  to   { stroke-dashoffset: var(--ring-to); }
+}
+
+@keyframes screen-in {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.screen.active { animation: screen-in 220ms ease-out; }
+</style>
+</head>
+<body>
+
+<div class="device-scaler">
+<div class="device">
+  <div class="device-screen">
+    <div class="island"></div>
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <span class="status-time">21:47</span>
+      <div class="status-icons">
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+          <rect x="0" y="3" width="3" height="9" rx="1" fill="currentColor" opacity="0.3"/>
+          <rect x="4.5" y="2" width="3" height="10" rx="1" fill="currentColor" opacity="0.5"/>
+          <rect x="9" y="0" width="3" height="12" rx="1" fill="currentColor" opacity="0.8"/>
+          <rect x="13.5" y="0" width="2.5" height="12" rx="1" fill="currentColor"/>
+        </svg>
+        <svg width="15" height="12" viewBox="0 0 15 12" fill="none">
+          <path d="M7.5 2.5C9.5 2.5 11.3 3.3 12.6 4.6L14 3.2C12.3 1.5 10 0.5 7.5 0.5C5 0.5 2.7 1.5 1 3.2L2.4 4.6C3.7 3.3 5.5 2.5 7.5 2.5Z" fill="currentColor" opacity="0.4"/>
+          <path d="M7.5 5.5C8.8 5.5 10 6 10.9 6.9L12.3 5.5C11 4.2 9.3 3.5 7.5 3.5C5.7 3.5 4 4.2 2.7 5.5L4.1 6.9C5 6 6.2 5.5 7.5 5.5Z" fill="currentColor" opacity="0.7"/>
+          <circle cx="7.5" cy="10" r="1.5" fill="currentColor"/>
+        </svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
+          <rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="currentColor" stroke-opacity="0.4"/>
+          <rect x="2" y="2" width="16" height="8" rx="2" fill="currentColor"/>
+          <path d="M23 4.5V7.5C23.8 7.2 24.5 6.5 24.5 6C24.5 5.5 23.8 4.8 23 4.5Z" fill="currentColor" opacity="0.4"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- SCREEN 1: SERVICE                             -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="screen active" id="s-service">
+      <div class="screen-head">
+        <div class="screen-title">Tonight's <em>Service</em></div>
+        <div class="screen-sub">8 active nodes · Friday, 11 July</div>
+      </div>
+      <div class="scroll-area">
+
+        <!-- READY NOW -->
+        <div class="group-label">
+          <span class="group-dot ready ready-pulse"></span>
+          Ready now · 2
+        </div>
+
+        <div class="node-card ready-card" onclick="openDetail('Barolo Cantina Vietti 2019','4','Ready to pour','2 min ago','18.2','100',17,19)">
+          <div style="width:36px;height:36px;flex-shrink:0">
+            <svg width="36" height="36" viewBox="0 0 36 36">
+              <path d="M7 19L14 27L29 10" stroke="#009A3B" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="node-info">
+            <div class="node-wine">Barolo Cantina Vietti 2019</div>
+            <div class="node-meta">Table 4 · Ready 2 min ago</div>
+          </div>
+          <span class="node-badge badge-ready">Ready</span>
+        </div>
+
+        <div class="node-card ready-card" onclick="openDetail('Brunello di Montalcino 2018','11','Ready to pour','just now','17.8','100',17,19)">
+          <div style="width:36px;height:36px;flex-shrink:0">
+            <svg width="36" height="36" viewBox="0 0 36 36">
+              <path d="M7 19L14 27L29 10" stroke="#009A3B" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="node-info">
+            <div class="node-wine">Brunello di Montalcino 2018</div>
+            <div class="node-meta">Table 11 · Ready just now</div>
+          </div>
+          <span class="node-badge badge-ready">Ready</span>
+        </div>
+
+        <!-- ALMOST READY -->
+        <div class="group-label">
+          <span class="group-dot almost"></span>
+          Almost ready · 1
+        </div>
+
+        <div class="node-card almost-card" onclick="openDetail('Cabernet Sauvignon 2021','7','3 min remaining','3 min','18.6','88',16,18)">
+          <div style="width:36px;height:36px;flex-shrink:0">
+            <svg width="36" height="36" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(212,133,10,0.15)" stroke-width="3"/>
+              <circle cx="18" cy="18" r="15" fill="none" stroke="#D4850A" stroke-width="3"
+                stroke-dasharray="94.25" stroke-dashoffset="11.3"
+                stroke-linecap="round" transform="rotate(-90 18 18)"/>
+            </svg>
+          </div>
+          <div class="node-info">
+            <div class="node-wine">Cabernet Sauvignon 2021</div>
+            <div class="node-meta">Table 7 · 3 min remaining</div>
+          </div>
+          <span class="node-badge badge-almost">3 min</span>
+        </div>
+
+        <!-- IN PROGRESS -->
+        <div class="group-label">
+          <span class="group-dot active"></span>
+          In progress · 3
+        </div>
+
+        <div class="node-card" onclick="openDetail('Pinot Noir Domaine 2020','2','14 min remaining','14 min','17.1','68',16,18)">
+          <div style="width:36px;height:36px;flex-shrink:0">
+            <svg width="36" height="36" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="18" cy="18" r="15" fill="none" stroke="#009A3B" stroke-width="3"
+                stroke-dasharray="94.25" stroke-dashoffset="30.2"
+                stroke-linecap="round" transform="rotate(-90 18 18)"/>
+            </svg>
+          </div>
+          <div class="node-info">
+            <div class="node-wine">Pinot Noir Domaine 2020</div>
+            <div class="node-meta">Table 2 · 14 min remaining</div>
+          </div>
+          <span class="node-badge badge-active">68%</span>
+        </div>
+
+        <div class="node-card" onclick="openDetail('Riesling Spätlese 2022','3','22 min remaining','22 min','9.2','44',8,10)">
+          <div style="width:36px;height:36px;flex-shrink:0">
+            <svg width="36" height="36" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="18" cy="18" r="15" fill="none" stroke="#009A3B" stroke-width="3"
+                stroke-dasharray="94.25" stroke-dashoffset="52.8"
+                stroke-linecap="round" transform="rotate(-90 18 18)"/>
+            </svg>
+          </div>
+          <div class="node-info">
+            <div class="node-wine">Riesling Spätlese 2022</div>
+            <div class="node-meta">Table 3 · 22 min remaining</div>
+          </div>
+          <span class="node-badge badge-active">44%</span>
+        </div>
+
+        <div class="node-card" onclick="openDetail('Malbec Gran Reserva 2020','8','31 min remaining','31 min','16.4','24',16,18)">
+          <div style="width:36px;height:36px;flex-shrink:0">
+            <svg width="36" height="36" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              <circle cx="18" cy="18" r="15" fill="none" stroke="#009A3B" stroke-width="3"
+                stroke-dasharray="94.25" stroke-dashoffset="71.6"
+                stroke-linecap="round" transform="rotate(-90 18 18)"/>
+            </svg>
+          </div>
+          <div class="node-info">
+            <div class="node-wine">Malbec Gran Reserva 2020</div>
+            <div class="node-meta">Table 8 · 31 min remaining</div>
+          </div>
+          <span class="node-badge badge-active">24%</span>
+        </div>
+
+        <!-- IDLE -->
+        <div class="group-label">
+          <span class="group-dot idle"></span>
+          Idle · 2
+        </div>
+        <div class="idle-toggle" onclick="toggleIdle(this)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M3 5L7 9L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span>Show 2 idle nodes</span>
+        </div>
+        <div class="idle-rows">
+          <div class="node-card" onclick="openDetail('Champagne Blanc de Blancs','5','Idle — not started','—','8.0','0',7,9)">
+            <div style="width:36px;height:36px;flex-shrink:0">
+              <svg width="36" height="36" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              </svg>
+            </div>
+            <div class="node-info">
+              <div class="node-wine">Champagne Blanc de Blancs</div>
+              <div class="node-meta">Table 5 · Not started</div>
+            </div>
+            <span class="node-badge badge-idle">Idle</span>
+          </div>
+          <div class="node-card" onclick="openDetail('Amarone della Valpolicella 2017','9','Idle — not started','—','16.0','0',18,20)">
+            <div style="width:36px;height:36px;flex-shrink:0">
+              <svg width="36" height="36" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+              </svg>
+            </div>
+            <div class="node-info">
+              <div class="node-wine">Amarone della Valpolicella</div>
+              <div class="node-meta">Table 9 · Not started</div>
+            </div>
+            <span class="node-badge badge-idle">Idle</span>
+          </div>
+        </div>
+
+        <div style="height:8px"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- SCREEN 2: BOTTLE DETAIL                       -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="screen" id="s-detail">
+      <div class="back-bar">
+        <button class="back-btn" onclick="closeDetail()">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M11 4L6 9L11 14" stroke="#009A3B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Service
+        </button>
+      </div>
+      <div class="scroll-area">
+        <div class="detail-hero">
+          <div class="detail-table-label" id="d-table-label">Table 4</div>
+          <div class="big-ring-wrap">
+            <svg width="180" height="180" viewBox="0 0 180 180" id="d-ring-svg">
+              <circle cx="90" cy="90" r="76" fill="none" stroke="var(--border)" stroke-width="9"/>
+              <circle id="d-ring-arc" cx="90" cy="90" r="76" fill="none" stroke="#009A3B" stroke-width="9"
+                stroke-dasharray="477.5" stroke-dashoffset="152.8"
+                stroke-linecap="round" transform="rotate(-90 90 90)"
+                style="transition: stroke-dashoffset 1s ease-out"/>
+            </svg>
+            <div class="ring-center">
+              <span class="ring-pct" id="d-pct">68%</span>
+            </div>
+          </div>
+          <div class="ring-meta">
+            <div class="ring-label" id="d-status-label">Aerating</div>
+            <div class="ring-time" id="d-time">14:32 remaining</div>
+          </div>
+          <div style="font-size:15px;color:var(--text);font-weight:500;text-align:center;margin-bottom:4px" id="d-wine-name">Pinot Noir Domaine 2020</div>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-stat">
+            <div class="detail-stat-label">Temperature</div>
+            <div class="detail-stat-value" id="d-temp">17.1 <span>°C</span></div>
+            <div class="temp-status" id="d-temp-status">
+              <span class="temp-dot" id="d-temp-dot"></span>
+              <span id="d-temp-label">Optimal</span>
+            </div>
+          </div>
+          <div class="detail-stat">
+            <div class="detail-stat-label">Optimal range</div>
+            <div class="detail-stat-value" id="d-opt-range">16–18 <span>°C</span></div>
+          </div>
+          <div class="detail-stat">
+            <div class="detail-stat-label">Aeration</div>
+            <div class="detail-stat-value" id="d-pct-stat">68 <span>%</span></div>
+          </div>
+          <div class="detail-stat">
+            <div class="detail-stat-label">Profile</div>
+            <div class="detail-stat-value" style="font-size:15px">Pinot Noir</div>
+          </div>
+        </div>
+
+        <!-- Temperature sparkline -->
+        <div class="sparkline-section">
+          <div class="spark-header">
+            <span class="spark-title">Temperature · last 30 min</span>
+            <span class="spark-current" id="d-spark-val">17.1 <span>°C</span></span>
+          </div>
+          <svg width="100%" height="60" viewBox="0 0 310 60" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="spark-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#009A3B" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="#009A3B" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Optimal band: 16-18°C → y range in 14-20°C scale -->
+            <rect x="0" y="20" width="310" height="20" fill="rgba(0,154,59,0.06)" rx="2"/>
+            <!-- Area fill -->
+            <path d="M0,52 L0,38 L35,32 L70,28 L105,20 L140,24 L175,18 L210,22 L245,26 L280,24 L310,22 L310,52 Z"
+              fill="url(#spark-grad)"/>
+            <!-- Line -->
+            <polyline points="0,38 35,32 70,28 105,20 140,24 175,18 210,22 245,26 280,24 310,22"
+              fill="none" stroke="#009A3B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Current dot -->
+            <circle cx="310" cy="22" r="3.5" fill="#009A3B"/>
+          </svg>
+          <div style="display:flex;justify-content:space-between;margin-top:4px">
+            <span style="font-size:10px;color:var(--text-dim)">30 min ago</span>
+            <span style="font-size:10px;color:var(--text-dim)">Now</span>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="d-serve-btn" onclick="markServed()">Mark as Served</button>
+        <div style="height:12px"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- SCREEN 3: INSIGHTS                            -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="screen" id="s-insights">
+      <div class="screen-head">
+        <div class="screen-title"><em>Insights</em></div>
+        <div class="screen-sub">Performance overview</div>
+      </div>
+      <div class="scroll-area">
+
+        <div class="toggle-row">
+          <button class="toggle-btn active" onclick="insightToggle(this,'tonight')">Tonight</button>
+          <button class="toggle-btn" onclick="insightToggle(this,'week')">This week</button>
+        </div>
+
+        <!-- Big donut: Service Accuracy -->
+        <div class="donut-hero">
+          <div class="donut-wrap">
+            <svg width="160" height="160" viewBox="0 0 160 160">
+              <circle cx="80" cy="80" r="60" fill="none" stroke="var(--border)" stroke-width="10"/>
+              <circle id="main-donut" cx="80" cy="80" r="60" fill="none" stroke="#009A3B" stroke-width="10"
+                stroke-dasharray="376.99" stroke-linecap="round"
+                stroke-dashoffset="22.6" transform="rotate(-90 80 80)"
+                style="transition: stroke-dashoffset 0.8s ease-out"/>
+            </svg>
+            <div class="donut-inner">
+              <span class="donut-pct" id="acc-pct">94%</span>
+              <div class="donut-label">Accuracy</div>
+            </div>
+          </div>
+          <div class="donut-title" id="acc-label">Service accuracy tonight</div>
+        </div>
+
+        <!-- KPI row -->
+        <div class="kpi-row">
+          <div class="kpi-chip">
+            <span class="kpi-value" id="kpi-bottles">23</span>
+            <div class="kpi-label">Bottles</div>
+          </div>
+          <div class="kpi-chip">
+            <span class="kpi-value" id="kpi-react">2:14</span>
+            <div class="kpi-label">Avg react</div>
+          </div>
+          <div class="kpi-chip">
+            <span class="kpi-value" id="kpi-miss" style="color:var(--amber)">1</span>
+            <div class="kpi-label">Missed</div>
+          </div>
+        </div>
+
+        <!-- Top Wines -->
+        <div class="chart-card">
+          <div class="chart-title" id="top-wines-title">Top Wines Tonight</div>
+          <div id="top-wines-bars">
+            <div class="bar-row"><span class="bar-name">Barolo Vietti</span><div class="bar-track"><div class="bar-fill" style="width:100%"></div></div><span class="bar-count">8</span></div>
+            <div class="bar-row"><span class="bar-name">Cab. Sauvignon</span><div class="bar-track"><div class="bar-fill" style="width:75%;animation-delay:0.1s"></div></div><span class="bar-count">6</span></div>
+            <div class="bar-row"><span class="bar-name">Pinot Noir</span><div class="bar-track"><div class="bar-fill" style="width:50%;animation-delay:0.2s"></div></div><span class="bar-count">4</span></div>
+            <div class="bar-row"><span class="bar-name">Brunello</span><div class="bar-track"><div class="bar-fill" style="width:37.5%;animation-delay:0.3s"></div></div><span class="bar-count">3</span></div>
+            <div class="bar-row"><span class="bar-name">Riesling</span><div class="bar-track"><div class="bar-fill" style="width:25%;animation-delay:0.4s"></div></div><span class="bar-count">2</span></div>
+          </div>
+        </div>
+
+        <!-- Hourly volume -->
+        <div class="chart-card">
+          <div class="chart-title" id="vol-title">Service Volume · Tonight</div>
+          <div class="vol-chart" id="vol-chart">
+            <div class="vol-col"><div class="vol-bar" style="height:16px"></div><div class="vol-label">18h</div></div>
+            <div class="vol-col"><div class="vol-bar" style="height:22px"></div><div class="vol-label">19h</div></div>
+            <div class="vol-col"><div class="vol-bar" style="height:35px"></div><div class="vol-label">20h</div></div>
+            <div class="vol-col"><div class="vol-bar" style="height:48px;opacity:1"></div><div class="vol-label">21h</div></div>
+            <div class="vol-col"><div class="vol-bar" style="height:10px;opacity:0.4"></div><div class="vol-label">22h</div></div>
+            <div class="vol-col"><div class="vol-bar" style="height:3px;opacity:0.25"></div><div class="vol-label">23h</div></div>
+            <div class="vol-col"><div class="vol-bar" style="height:2px;opacity:0.15"></div><div class="vol-label">00h</div></div>
+          </div>
+        </div>
+
+        <!-- Temp compliance mini donut -->
+        <div class="chart-card">
+          <div class="chart-title">Temperature Compliance</div>
+          <div class="mini-donut-row">
+            <div>
+              <svg width="72" height="72" viewBox="0 0 72 72">
+                <circle cx="36" cy="36" r="28" fill="none" stroke="var(--border)" stroke-width="7"/>
+                <circle id="temp-donut" cx="36" cy="36" r="28" fill="none" stroke="#009A3B" stroke-width="7"
+                  stroke-dasharray="175.9" stroke-dashoffset="14.1"
+                  stroke-linecap="round" transform="rotate(-90 36 36)"
+                  style="transition: stroke-dashoffset 0.8s ease-out"/>
+              </svg>
+            </div>
+            <div class="mini-donut-text">
+              <div class="mini-donut-pct" id="temp-compliance-pct">92%</div>
+              <div class="mini-donut-desc" id="temp-compliance-desc">of bottles served within optimal temperature range tonight</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:14px">
+            <div style="flex:1;text-align:center">
+              <div style="font-size:18px;color:var(--text);font-weight:300" id="tc-optimal">21</div>
+              <div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:0.08em">Optimal</div>
+            </div>
+            <div style="width:1px;background:var(--border)"></div>
+            <div style="flex:1;text-align:center">
+              <div style="font-size:18px;color:var(--amber);font-weight:300" id="tc-warm">2</div>
+              <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em">Too warm</div>
+            </div>
+            <div style="width:1px;background:var(--border)"></div>
+            <div style="flex:1;text-align:center">
+              <div style="font-size:18px;color:var(--text-dim);font-weight:300" id="tc-cold">0</div>
+              <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em">Too cold</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reaction time distribution -->
+        <div class="chart-card">
+          <div class="chart-title" id="react-title">Avg Reaction Time</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:14px">
+            <div style="font-family:'Merriweather',serif;font-weight:300;font-size:36px;color:var(--text)" id="react-val">2:14</div>
+            <div style="font-size:13px;color:var(--text-muted)" id="react-sub">min · ready → served</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <svg width="12" height="12" viewBox="0 0 12 12"><path d="M6 10L6 2M2 6L6 2L10 6" stroke="#009A3B" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span style="font-size:12px;color:var(--green)" id="react-delta">32s faster than last week</span>
+          </div>
+        </div>
+
+        <div style="height:8px"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- SCREEN 4: LOG                                 -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="screen" id="s-log">
+      <div class="screen-head">
+        <div class="screen-title">Service <em>Log</em></div>
+        <div class="screen-sub">Tonight · 23 events</div>
+      </div>
+      <div class="scroll-area">
+        <div class="log-item">
+          <div class="log-time">21:47</div>
+          <div class="log-body">
+            <div class="log-wine">Barolo Cantina Vietti 2019</div>
+            <div class="log-detail">Table 4 · 45 min aeration</div>
+          </div>
+          <div class="log-status log-ok">✓ On time</div>
+        </div>
+        <div class="log-item">
+          <div class="log-time">21:34</div>
+          <div class="log-body">
+            <div class="log-wine">Brunello di Montalcino 2018</div>
+            <div class="log-detail">Table 11 · 60 min aeration</div>
+          </div>
+          <div class="log-status log-ok">✓ On time</div>
+        </div>
+        <div class="log-item">
+          <div class="log-time">21:12</div>
+          <div class="log-body">
+            <div class="log-wine">Cabernet Sauvignon Reserve</div>
+            <div class="log-detail">Table 6 · 30 min aeration</div>
+          </div>
+          <div class="log-status log-late">⚠ 4m late</div>
+        </div>
+        <div class="log-item">
+          <div class="log-time">20:58</div>
+          <div class="log-body">
+            <div class="log-wine">Pinot Noir Domaine 2019</div>
+            <div class="log-detail">Table 1 · 25 min aeration</div>
+          </div>
+          <div class="log-status log-ok">✓ On time</div>
+        </div>
+        <div class="log-item">
+          <div class="log-time">20:44</div>
+          <div class="log-body">
+            <div class="log-wine">Amarone della Valpolicella</div>
+            <div class="log-detail">Table 10 · 90 min aeration</div>
+          </div>
+          <div class="log-status log-ok">✓ On time</div>
+        </div>
+        <div class="log-item">
+          <div class="log-time">20:31</div>
+          <div class="log-body">
+            <div class="log-wine">Malbec Gran Reserva 2019</div>
+            <div class="log-detail">Table 5 · 40 min aeration</div>
+          </div>
+          <div class="log-status log-miss">✗ Missed</div>
+        </div>
+        <div class="log-item">
+          <div class="log-time">20:17</div>
+          <div class="log-body">
+            <div class="log-wine">Barolo Cantina Vietti 2018</div>
+            <div class="log-detail">Table 3 · 45 min aeration</div>
+          </div>
+          <div class="log-status log-ok">✓ On time</div>
+        </div>
+        <div class="log-item">
+          <div class="log-time">20:02</div>
+          <div class="log-body">
+            <div class="log-wine">Chardonnay Premier Cru</div>
+            <div class="log-detail">Table 8 · 15 min aeration</div>
+          </div>
+          <div class="log-status log-ok">✓ On time</div>
+        </div>
+        <div class="log-item">
+          <div class="log-time">19:48</div>
+          <div class="log-body">
+            <div class="log-wine">Riesling Spätlese 2021</div>
+            <div class="log-detail">Table 2 · 10 min chill</div>
+          </div>
+          <div class="log-status log-ok">✓ On time</div>
+        </div>
+        <div class="log-item">
+          <div class="log-time">19:33</div>
+          <div class="log-body">
+            <div class="log-wine">Brunello di Montalcino 2017</div>
+            <div class="log-detail">Table 7 · 60 min aeration</div>
+          </div>
+          <div class="log-status log-late">⚠ 7m late</div>
+        </div>
+        <div style="height:8px"></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- SCREEN 5: SETTINGS                            -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="screen" id="s-settings">
+      <div class="screen-head">
+        <div class="screen-title"><em>Settings</em></div>
+      </div>
+      <div class="scroll-area">
+
+        <!-- Profile -->
+        <div class="settings-section-title">Account</div>
+        <div class="settings-row">
+          <div class="settings-row-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="6" r="3.5" stroke="#009A3B" stroke-width="1.5"/>
+              <path d="M2 15.5C2 12.5 5 10 9 10C13 10 16 12.5 16 15.5" stroke="#009A3B" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="settings-row-info">
+            <div class="settings-row-label">Marco Visconti</div>
+            <div class="settings-row-sub">Head Sommelier · La Terrazza</div>
+          </div>
+          <svg class="settings-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <!-- Nodes -->
+        <div class="settings-section-title">Connected Nodes</div>
+        <div class="node-device-row">
+          <div class="node-device-dot"></div>
+          <div class="node-device-name">Node SN-004 · Table 4</div>
+          <div class="node-device-bat">
+            <svg width="22" height="12" viewBox="0 0 22 12" fill="none" style="display:inline;vertical-align:middle;margin-right:4px">
+              <rect x="0.5" y="0.5" width="18" height="11" rx="2.5" stroke="currentColor" stroke-opacity="0.4"/>
+              <rect x="2" y="2" width="13" height="8" rx="1.5" fill="#009A3B"/>
+              <path d="M20 4V8C20.8 7.6 21.5 6.9 21.5 6C21.5 5.1 20.8 4.4 20 4Z" fill="currentColor" opacity="0.4"/>
+            </svg>
+            82%
+          </div>
+        </div>
+        <div class="node-device-row">
+          <div class="node-device-dot"></div>
+          <div class="node-device-name">Node SN-007 · Table 7</div>
+          <div class="node-device-bat">
+            <svg width="22" height="12" viewBox="0 0 22 12" fill="none" style="display:inline;vertical-align:middle;margin-right:4px">
+              <rect x="0.5" y="0.5" width="18" height="11" rx="2.5" stroke="currentColor" stroke-opacity="0.4"/>
+              <rect x="2" y="2" width="9" height="8" rx="1.5" fill="#D4850A"/>
+              <path d="M20 4V8C20.8 7.6 21.5 6.9 21.5 6C21.5 5.1 20.8 4.4 20 4Z" fill="currentColor" opacity="0.4"/>
+            </svg>
+            54%
+          </div>
+        </div>
+        <div class="node-device-row">
+          <div class="node-device-dot"></div>
+          <div class="node-device-name">Node SN-011 · Table 11</div>
+          <div class="node-device-bat">
+            <svg width="22" height="12" viewBox="0 0 22 12" fill="none" style="display:inline;vertical-align:middle;margin-right:4px">
+              <rect x="0.5" y="0.5" width="18" height="11" rx="2.5" stroke="currentColor" stroke-opacity="0.4"/>
+              <rect x="2" y="2" width="15" height="8" rx="1.5" fill="#009A3B"/>
+              <path d="M20 4V8C20.8 7.6 21.5 6.9 21.5 6C21.5 5.1 20.8 4.4 20 4Z" fill="currentColor" opacity="0.4"/>
+            </svg>
+            94%
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="settings-section-title">Preferences</div>
+        <div class="settings-row">
+          <div class="settings-row-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 2C6.2 2 4 4.2 4 7V11L2.5 13H15.5L14 11V7C14 4.2 11.8 2 9 2Z" stroke="#009A3B" stroke-width="1.5" stroke-linejoin="round"/>
+              <path d="M7 13C7 14.1 7.9 15 9 15C10.1 15 11 14.1 11 13" stroke="#009A3B" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div class="settings-row-info">
+            <div class="settings-row-label">Ready Alerts</div>
+            <div class="settings-row-sub">Push + haptic when bottle is ready</div>
+          </div>
+          <div class="toggle-switch" onclick="this.classList.toggle('off')"></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <circle cx="9" cy="9" r="7" stroke="#009A3B" stroke-width="1.5"/>
+              <path d="M9 5V9L11.5 11.5" stroke="#009A3B" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="settings-row-info">
+            <div class="settings-row-label">Temperature Alerts</div>
+            <div class="settings-row-sub">Alert when outside optimal range</div>
+          </div>
+          <div class="toggle-switch" onclick="this.classList.toggle('off')"></div>
+        </div>
+
+        <!-- Wine profiles -->
+        <div class="settings-section-title">Wine Profiles</div>
+        <div class="settings-row" style="cursor:pointer">
+          <div class="settings-row-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M6 2H12L14 7C14 10 11.5 12 9 12C6.5 12 4 10 4 7L6 2Z" stroke="#009A3B" stroke-width="1.5" stroke-linejoin="round"/>
+              <path d="M9 12V16M6 16H12" stroke="#009A3B" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="settings-row-info">
+            <div class="settings-row-label">Manage Profiles</div>
+            <div class="settings-row-sub">14 custom aeration profiles</div>
+          </div>
+          <svg class="settings-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <div style="height:8px"></div>
+      </div>
+    </div>
+
+    <!-- ─── Bottom nav ─────────────────────────────── -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" onclick="navTo('service',this)" data-tab="service">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <circle cx="11" cy="11" r="8.5" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="11" cy="11" r="3" fill="currentColor"/>
+          <path d="M11 2.5V4M11 18V19.5M2.5 11H4M18 11H19.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span>Service</span>
+      </button>
+      <button class="nav-btn" onclick="navTo('insights',this)" data-tab="insights">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <rect x="3" y="12" width="4" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="9" y="8" width="4" height="11" rx="1" stroke="currentColor" stroke-width="1.5"/>
+          <rect x="15" y="4" width="4" height="15" rx="1" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        <span>Insights</span>
+      </button>
+      <button class="nav-btn" onclick="navTo('log',this)" data-tab="log">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M4 6H18M4 11H18M4 16H12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span>Log</span>
+      </button>
+      <button class="nav-btn" onclick="navTo('settings',this)" data-tab="settings">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <circle cx="11" cy="11" r="3" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M11 2L12.5 5.5L16 4L16 8H19.5L18 11L19.5 14H16V18L12.5 16.5L11 20L9.5 16.5L6 18V14H2.5L4 11L2.5 8H6V4L9.5 5.5L11 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+        <span>Settings</span>
+      </button>
+    </nav>
+
+  </div>
+</div>
+
+<script>
+// ─── Navigation ───────────────────────────────────
+function navTo(tab, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const screen = document.getElementById('s-' + tab);
+  if (screen) {
+    screen.classList.add('active');
+    const sa = screen.querySelector('.scroll-area');
+    if (sa) sa.scrollTop = 0;
+  }
+  if (btn) btn.classList.add('active');
+  // re-trigger bar animations on insights
+  if (tab === 'insights') {
+    document.querySelectorAll('.bar-fill').forEach(b => {
+      b.style.animation = 'none';
+      b.offsetHeight;
+      b.style.animation = '';
+    });
+  }
+}
+
+// ─── Detail screen ────────────────────────────────
+let prevScreen = 's-service';
+
+function openDetail(wine, table, statusLabel, timeLeft, temp, pctStr, optMin, optMax) {
+  const pct = parseInt(pctStr);
+  document.getElementById('d-wine-name').textContent = wine;
+  document.getElementById('d-table-label').textContent = 'Table ' + table;
+  document.getElementById('d-pct').textContent = pct + '%';
+  document.getElementById('d-status-label').textContent = pct >= 100 ? 'Ready to pour' : 'Aerating';
+  document.getElementById('d-time').textContent = pct >= 100 ? 'Ready to pour' : timeLeft + ' remaining';
+  document.getElementById('d-time').style.color = 'var(--green)';
+  const tempVal = parseFloat(temp);
+  document.getElementById('d-temp').innerHTML = temp + ' <span>°C</span>';
+  document.getElementById('d-spark-val').innerHTML = temp + ' <span>°C</span>';
+  document.getElementById('d-pct-stat').textContent = pct;
+  document.getElementById('d-opt-range').innerHTML = optMin + '–' + optMax + ' <span>°C</span>';
+
+  // Temperature status
+  const inRange = tempVal >= optMin && tempVal <= optMax;
+  const tooWarm = tempVal > optMax;
+  const statusColor = inRange ? 'var(--green)' : tooWarm ? 'var(--amber)' : '#5B9BD5';
+  const statusText = inRange ? 'Optimal' : tooWarm ? 'Too warm' : 'Too cold';
+  document.getElementById('d-temp').style.color = statusColor;
+  document.getElementById('d-temp-dot').style.background = statusColor;
+  document.getElementById('d-temp-label').textContent = statusText;
+  document.getElementById('d-temp-label').style.color = statusColor;
+
+  // Update ring arc (circumference = 2π×76 ≈ 477.5)
+  const arc = document.getElementById('d-ring-arc');
+  const circumference = 477.5;
+  const offset = circumference * (1 - pct / 100);
+  arc.setAttribute('stroke-dashoffset', offset);
+  arc.setAttribute('stroke', pct >= 100 ? '#00C44A' : '#009A3B');
+
+  // Animate ring
+  arc.style.strokeDashoffset = circumference;
+  requestAnimationFrame(() => {
+    arc.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)';
+    arc.style.strokeDashoffset = offset;
+  });
+
+  document.getElementById('d-serve-btn').textContent = pct >= 100 ? 'Confirm Served' : 'Mark as Served';
+
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-detail').classList.add('active');
+}
+
+function closeDetail() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-service').classList.add('active');
+}
+
+function markServed() {
+  document.getElementById('d-serve-btn').textContent = '✓ Marked as Served';
+  document.getElementById('d-serve-btn').style.background = 'var(--green)';
+  document.getElementById('d-serve-btn').style.color = '#fff';
+  setTimeout(closeDetail, 900);
+}
+
+// ─── Idle toggle ──────────────────────────────────
+function toggleIdle(el) {
+  const rows = el.nextElementSibling;
+  const isOpen = rows.classList.toggle('open');
+  el.querySelector('span').textContent = isOpen ? 'Hide idle nodes' : 'Show 2 idle nodes';
+  el.querySelector('svg path').setAttribute('d', isOpen ? 'M3 9L7 5L11 9' : 'M3 5L7 9L11 5');
+}
+
+// ─── Insights toggle ──────────────────────────────
+const insightData = {
+  tonight: {
+    acc: 94, accOffset: 22.6, accLabel: 'Service accuracy tonight',
+    bottles: 23, react: '2:14', miss: 1,
+    wines: [['Barolo Vietti',100,8],['Cab. Sauvignon',75,6],['Pinot Noir',50,4],['Brunello',37.5,3],['Riesling',25,2]],
+    volBars: [20,28,44,60,12,4,2],
+    tempPct: 92, tempOffset: 14.1, optimal: 21, warm: 2, cold: 0,
+    reactVal: '2:14', reactSub: 'min · ready → served',
+    reactDelta: '32s faster than last week',
+    winesTitle: 'Top Wines Tonight', volTitle: 'Service Volume · Tonight',
+    tcDesc: 'of bottles served within optimal temperature range tonight'
+  },
+  week: {
+    acc: 91, accOffset: 33.9, accLabel: 'Service accuracy this week',
+    bottles: 142, react: '2:41', miss: 13,
+    wines: [['Barolo Vietti',100,52],['Brunello',84,44],['Cab. Sauvignon',71,37],['Pinot Noir',56,29],['Amarone',33,17]],
+    volBars: [38,52,64,72,68,44,20],
+    tempPct: 89, tempOffset: 19.3, optimal: 127, warm: 9, cold: 6,
+    reactVal: '2:41', reactSub: 'min avg · ready → served',
+    reactDelta: '18s faster than prior week',
+    winesTitle: 'Top Wines This Week', volTitle: 'Service Volume · Daily avg',
+    tcDesc: 'of bottles served within optimal temperature range this week'
+  }
+};
+
+function insightToggle(btn, period) {
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const d = insightData[period];
+
+  // Donut
+  document.getElementById('acc-pct').textContent = d.acc + '%';
+  document.getElementById('acc-label').textContent = d.accLabel;
+  const md = document.getElementById('main-donut');
+  md.style.transition = 'none';
+  md.setAttribute('stroke-dashoffset', 376.99);
+  requestAnimationFrame(() => {
+    md.style.transition = 'stroke-dashoffset 0.8s ease-out';
+    md.setAttribute('stroke-dashoffset', d.accOffset);
+  });
+
+  // KPIs
+  document.getElementById('kpi-bottles').textContent = d.bottles;
+  document.getElementById('kpi-react').textContent = d.react;
+  document.getElementById('kpi-miss').textContent = d.miss;
+
+  // Top wines
+  document.getElementById('top-wines-title').textContent = d.winesTitle;
+  const barsEl = document.getElementById('top-wines-bars');
+  barsEl.innerHTML = d.wines.map((w, i) =>
+    `<div class="bar-row">
+      <span class="bar-name">${w[0]}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${w[1]}%;animation-delay:${i*0.08}s"></div></div>
+      <span class="bar-count">${w[2]}</span>
+    </div>`
+  ).join('');
+
+  // Volume chart
+  document.getElementById('vol-title').textContent = d.volTitle;
+  const maxVol = Math.max(...d.volBars);
+  const volChart = document.getElementById('vol-chart');
+  const labels = period === 'week'
+    ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+    : ['18h','19h','20h','21h','22h','23h','00h'];
+  volChart.innerHTML = d.volBars.map((v, i) => {
+    const h = Math.round((v / maxVol) * 48);
+    const op = v === maxVol ? 1 : 0.4 + (v / maxVol) * 0.6;
+    return `<div class="vol-col">
+      <div class="vol-bar" style="height:${h}px;opacity:${op}"></div>
+      <div class="vol-label">${labels[i]}</div>
+    </div>`;
+  }).join('');
+
+  // Temp compliance
+  document.getElementById('temp-compliance-pct').textContent = d.tempPct + '%';
+  document.getElementById('temp-compliance-desc').textContent = d.tcDesc;
+  document.getElementById('tc-optimal').textContent = d.optimal;
+  document.getElementById('tc-warm').textContent = d.warm;
+  document.getElementById('tc-cold').textContent = d.cold;
+  const td = document.getElementById('temp-donut');
+  td.style.transition = 'none';
+  td.setAttribute('stroke-dashoffset', 175.9);
+  requestAnimationFrame(() => {
+    td.style.transition = 'stroke-dashoffset 0.8s ease-out';
+    td.setAttribute('stroke-dashoffset', d.tempOffset);
+  });
+
+  // Reaction time
+  document.getElementById('react-val').textContent = d.reactVal;
+  document.getElementById('react-sub').textContent = d.reactSub;
+  document.getElementById('react-delta').textContent = d.reactDelta;
+}
+
+// ─── Scale device to fit viewport ─────────────────
+function scaleDevice() {
+  const device = document.querySelector('.device');
+  const deviceW = 403; // 375 + 14*2
+  const deviceH = 808; // 780 + 14*2
+  const scaleH = (window.innerHeight - 16) / deviceH;
+  const scaleW = (window.innerWidth - 16) / deviceW;
+  const scale = Math.min(scaleH, scaleW, 1);
+  device.style.transform = `scale(${scale})`;
+  device.style.transformOrigin = 'center center';
+}
+window.addEventListener('resize', scaleDevice);
+scaleDevice();
+
+</script>
+</div><!-- /device-scaler -->
+</body>
+</html>

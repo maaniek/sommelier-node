@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sommelier Node — by Vorwerk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green: #009A3B;
+    --green-dark: #007a2f;
+    --sage: #E0E7B0;
+    --ink: #212529;
+    --paper: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; margin:0; padding:0; }
+
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Source Sans 3", sans-serif;
+    cursor: none;
+  }
+
+  ::selection { background: var(--sage); }
+
+  a, button { cursor: none; }
+
+  /* ---------- custom dot cursor ---------- */
+  #cursor-dot {
+    position: fixed;
+    top: 0; left: 0;
+    width: 10px; height: 10px;
+    background: var(--green);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width .18s ease, height .18s ease, background .18s ease;
+  }
+  #cursor-dot.hovered {
+    width: 34px; height: 34px;
+    background: rgba(0,154,59,0.15);
+    border: 1.5px solid var(--green);
+  }
+
+  /* ---------- nav ---------- */
+  header {
+    position: sticky; top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 48px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+  }
+
+  /* Sommelier Node wordmark — minimal ring pictogram + clean serif name */
+  .sn-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sn-logo svg { width: 38px; height: 38px; flex-shrink: 0; }
+  .sn-logo .name {
+    font-family: "Merriweather", serif;
+    font-weight: 300;
+    font-size: 24px;
+    letter-spacing: 0.2px;
+    color: var(--ink);
+  }
+
+  /* Vorwerk mark — icon + wordmark, right side of nav */
+  .vorwerk-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 28px;
+  }
+  .vorwerk-logo img { width: 118px; height: auto; display:block; }
+
+  nav ul {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+  }
+  nav a {
+    text-decoration: none;
+    color: var(--ink);
+    font-size: 17px;
+    font-weight: 600;
+    position: relative;
+    padding-bottom: 4px;
+  }
+  nav a::after {
+    content: "";
+    position: absolute;
+    left: 0; bottom: 0;
+    width: 0%; height: 2px;
+    background: var(--green);
+    transition: width .25s ease;
+  }
+  nav a:hover::after { width: 100%; }
+  nav a:hover { color: var(--green-dark); }
+
+  .nav-right { display:flex; align-items:center; gap:36px; }
+
+  .cta-btn {
+    background: transparent;
+    color: var(--green);
+    border: 1.5px solid var(--green);
+    padding: 13px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 999px;
+    text-decoration: none;
+    transition: background .2s ease, color .2s ease, transform .2s ease;
+    display: inline-block;
+  }
+  .cta-btn:hover { background: var(--green); color: #fff; transform: translateY(-1px); }
+
+  /* CTA on dark hero background reads white-on-transparent */
+  .hero-actions .cta-btn { background: #fff; color: var(--ink); border-color: #fff; }
+  .hero-actions .cta-btn:hover { background: transparent; color: #fff; }
+
+  /* ---------- hero (full-bleed image, text overlaid) ---------- */
+  .hero {
+    position: relative;
+    margin: 0 40px 0;
+    border-radius: 32px;
+    overflow: hidden;
+    min-height: 86vh;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .hero-media {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .hero-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .hero-media .img-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #2b2f2c, #444a44);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color: rgba(255,255,255,0.55);
+    font-size: 14px;
+    text-align:center;
+    padding: 20px;
+    line-height:1.6;
+  }
+  .hero-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0) 70%);
+    z-index: 1;
+  }
+
+  .hero-copy {
+    position: relative;
+    z-index: 2;
+    max-width: 1180px;
+    padding: 84px;
+    opacity:0; transform: translateY(16px); animation: rise .8s ease forwards .15s;
+  }
+
+  h1 {
+    font-family: "Merriweather", serif;
+    font-weight: 300;
+    font-size: clamp(68px, 8vw, 132px);
+    line-height: 1.05;
+    letter-spacing: -1px;
+    margin-bottom: 28px;
+    color: transparent;
+    -webkit-text-stroke: 1.5px #fff;
+    text-stroke: 1.5px #fff;
+  }
+  h1 .accent {
+    -webkit-text-stroke: 1.5px var(--green);
+    text-stroke: 1.5px var(--green);
+  }
+
+  .hero-copy p {
+    font-family: "Source Sans 3", sans-serif;
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 1.55;
+    color: #fff;
+    max-width: 760px;
+    margin-bottom: 38px;
+  }
+
+  .hero-actions { display:flex; align-items:center; gap: 28px; }
+
+  .ghost-link {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    text-decoration: none;
+    border: 1.5px solid rgba(255,255,255,0.6);
+    border-radius: 999px;
+    padding: 13px 28px;
+    transition: background .2s ease, border-color .2s ease;
+  }
+  .ghost-link:hover { background: rgba(255,255,255,0.1); border-color: #fff; }
+
+  @keyframes rise {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---------- short description ---------- */
+  .description {
+    background: var(--sage);
+    padding: 130px 48px;
+    margin: 20px 40px 0;
+    border-radius: 32px;
+  }
+  .description-inner {
+    max-width: 780px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .description h2 {
+    font-family: "Merriweather", serif;
+    font-weight: 300;
+    font-size: clamp(40px, 5.5vw, 72px);
+    letter-spacing: -0.5px;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--green-dark);
+    text-stroke: 1.5px var(--green-dark);
+    margin-bottom: 56px;
+  }
+  .description p {
+    font-size: 28px;
+    line-height: 1.6;
+    color: #1c1c1c;
+    font-family: "Merriweather", serif;
+    font-weight: 300;
+  }
+  .description p.craft {
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--green-dark);
+    margin-top: 44px;
+  }
+  .description p.craft br { display: block; margin-top: 8px; }
+  .description .vorwerk-link {
+    color: var(--green-dark);
+    text-decoration: underline;
+  }
+
+  .benefits {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    max-width: 900px;
+    margin: 88px auto 0;
+    text-align: left;
+  }
+  .benefits li {
+    list-style: none;
+    font-family: "Source Sans 3", sans-serif;
+  }
+  .benefits .tick {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--green-dark);
+    margin-bottom: 16px;
+  }
+  .benefits .tick svg { width: 14px; height: 14px; }
+  .benefits strong {
+    display: block;
+    font-size: 21px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .benefits span {
+    font-size: 18px;
+    line-height: 1.5;
+    color: #333;
+  }
+
+  /* ---------- features ---------- */
+  .features {
+    background: var(--sage);
+    padding: 130px 48px;
+    margin: 20px 40px 0;
+    border-radius: 32px;
+    text-align: center;
+  }
+  .features h2 {
+    font-family: "Merriweather", serif;
+    font-weight: 300;
+    font-size: clamp(40px, 5.5vw, 72px);
+    letter-spacing: -0.5px;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--green-dark);
+    text-stroke: 1.5px var(--green-dark);
+    margin-bottom: 48px;
+  }
+
+  .tab-switcher {
+    display: inline-flex;
+    padding: 5px;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 999px;
+    gap: 4px;
+    margin-bottom: 64px;
+  }
+  .tab-btn {
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 11px 26px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: #555;
+    transition: background .25s ease, color .25s ease;
+  }
+  .tab-btn.active {
+    background: var(--green);
+    color: #fff;
+  }
+
+  .feature-list {
+    max-width: 780px;
+    margin: 0 auto;
+    text-align: left;
+    display: none;
+  }
+  .feature-list.active { display: block; }
+
+  .feature-item {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+  .feature-item:first-child { border-top: 1px solid rgba(0,0,0,0.1); }
+
+  .feature-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 28px 8px;
+    cursor: none;
+    transition: background .2s ease;
+  }
+  .feature-item-header:hover { background: rgba(0,154,59,0.04); }
+  .feature-item-header h3 {
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+    transition: color .2s ease;
+  }
+  .feature-item-header:hover h3 { color: var(--green-dark); }
+
+  .feature-number {
+    font-family: "Merriweather", serif;
+    font-weight: 300;
+    font-size: 15px;
+    color: var(--green-dark);
+    margin-right: 18px;
+  }
+  .feature-item-title { display:flex; align-items:center; flex: 1; }
+
+  .chevron {
+    flex-shrink: 0;
+    width: 20px; height: 20px;
+    transition: transform .3s ease;
+  }
+  .feature-item.open .chevron { transform: rotate(45deg); }
+
+  .feature-item-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s ease, padding .35s ease;
+  }
+  .feature-item.open .feature-item-body {
+    max-height: 220px;
+    padding-bottom: 28px;
+  }
+  .feature-item-body p {
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #444;
+    max-width: 600px;
+    padding-left: 56px;
+  }
+
+  .feature-outcome {
+    font-family: "Merriweather", serif;
+    font-weight: 400;
+    font-size: clamp(24px, 2.8vw, 34px);
+    line-height: 1.5;
+    color: var(--ink);
+    text-align: left;
+    max-width: 680px;
+    margin: 64px auto 0;
+  }
+  .feature-outcome .tag {
+    display: block;
+    font-family: "Source Sans 3", sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--green-dark);
+    margin-bottom: 14px;
+  }
+  .feature-outcome .hl {
+    background: rgba(0,154,59,0.3);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    padding: 2px 2px;
+  }
+
+  /* ---------- mobile app ---------- */
+  .app-section {
+    padding: 130px 48px;
+    margin: 20px 40px 0;
+    border-radius: 32px;
+  }
+  .app-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 80px;
+  }
+  .app-copy .eyebrow { margin-bottom: 22px; }
+  .app-copy h2 {
+    font-family: "Merriweather", serif;
+    font-weight: 300;
+    font-size: clamp(44px, 5.2vw, 68px);
+    line-height: 1.08;
+    letter-spacing: -0.5px;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--green-dark);
+    text-stroke: 1.5px var(--green-dark);
+    margin-bottom: 28px;
+  }
+  .app-copy > p {
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 19px;
+    line-height: 1.6;
+    color: #333;
+    max-width: 440px;
+    margin-bottom: 40px;
+  }
+
+  .app-features {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    margin-bottom: 44px;
+  }
+  .app-features li {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .app-features .tick {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+  }
+  .app-features .tick svg { width: 12px; height: 12px; }
+
+  .app-store-links { display: flex; gap: 14px; }
+  .store-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: 10px;
+    background: var(--ink);
+    color: #fff;
+    text-decoration: none;
+    font-family: "Source Sans 3", sans-serif;
+    transition: transform .2s ease, background .2s ease;
+  }
+  .store-btn:hover { background: #000; transform: translateY(-2px); }
+  .store-btn .store-label { line-height: 1.15; }
+  .store-btn .store-sub { font-size: 10px; opacity: .75; display:block; }
+  .store-btn .store-main { font-size: 15px; font-weight: 700; display:block; }
+  .store-btn svg { width: 20px; height: 20px; }
+
+  /* phone mockup */
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(28px) scale(0.96);
+    transition: opacity .9s cubic-bezier(.22,.61,.36,1), transform .9s cubic-bezier(.22,.61,.36,1);
+  }
+  .phone-wrap.in-view { opacity: 1; transform: translateY(0) scale(1); }
+
+  .phone {
+    width: 300px;
+    height: 610px;
+    background: #111;
+    border-radius: 46px;
+    padding: 14px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.25);
+    position: relative;
+  }
+  .phone::before {
+    content: "";
+    position: absolute;
+    top: 14px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 26px;
+    background: #111;
+    border-radius: 0 0 16px 16px;
+    z-index: 3;
+  }
+  .phone-screen {
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, #1a1c1a 0%, #0d0f0d 100%);
+    border-radius: 34px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 56px 0 32px;
+    cursor: none;
+  }
+
+  .screen-viewport {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    padding: 0 26px;
+  }
+  .screen-panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    opacity: 0;
+    transform: translateX(16px);
+    transition: opacity .4s ease, transform .4s ease;
+    pointer-events: none;
+  }
+  .screen-panel.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  .phone-eyebrow {
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 6px;
+  }
+  .phone-wine {
+    font-family: "Merriweather", serif;
+    font-weight: 300;
+    font-size: 20px;
+    color: #fff;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+
+  .progress-ring { position: relative; width: 180px; height: 180px; margin-bottom: 36px; flex-shrink: 0; }
+  .progress-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .progress-ring circle.track { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 6; }
+  .progress-ring circle.fill {
+    fill: none;
+    stroke: var(--green);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 490;
+    stroke-dashoffset: 490;
+    transition: stroke-dashoffset 1.6s cubic-bezier(.22,.61,.36,1);
+  }
+  .phone-wrap.in-view .progress-ring circle.fill { stroke-dashoffset: 122; }
+  .progress-ring .progress-label {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .progress-label .big { font-family: "Source Sans 3", sans-serif; font-size: 30px; font-weight: 700; color: #fff; }
+  .progress-label .small { font-size: 12px; color: rgba(255,255,255,0.55); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+
+  .phone-stats {
+    display: flex;
+    gap: 28px;
+  }
+  .phone-stat { text-align: center; }
+  .phone-stat .value { font-family: "Source Sans 3", sans-serif; font-size: 18px; font-weight: 700; color: #fff; }
+  .phone-stat .label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-top: 2px; }
+
+  .phone-nav {
+    display: flex;
+    gap: 36px;
+    padding-top: 24px;
+    margin-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    width: 100%;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .phone-nav svg { width: 20px; height: 20px; opacity: 0.35; transition: opacity .3s ease, stroke .3s ease; }
+  .phone-nav svg path { stroke: #fff; }
+  .phone-nav svg.active { opacity: 1; }
+  .phone-nav svg.active path { stroke: var(--green); }
+
+  /* screen 2: cellar dashboard */
+  .cellar-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .cellar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .cellar-row .status-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .status-dot.ready { background: var(--green); box-shadow: 0 0 0 3px rgba(0,154,59,0.25); }
+  .status-dot.aerating { background: #d99a1f; box-shadow: 0 0 0 3px rgba(217,154,31,0.25); }
+  .status-dot.idle { background: #555; }
+  .cellar-row .cellar-info { flex: 1; min-width: 0; }
+  .cellar-row .cellar-name { font-family: "Source Sans 3", sans-serif; font-size: 14px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cellar-row .cellar-table { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+  .cellar-row .cellar-state { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+  .cellar-row .cellar-state.ready { color: var(--green); }
+  .cellar-row .cellar-state.aerating { color: #d99a1f; }
+  .cellar-row .cellar-state.idle { color: rgba(255,255,255,0.4); }
+
+  /* screen 3: ready notification */
+  .ready-panel { justify-content: center; }
+  .ready-badge {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    border: 2px solid var(--green);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 28px;
+    box-shadow: 0 0 0 0 rgba(0,154,59,0.5);
+  }
+  .screen-panel.active .ready-badge { animation: ready-pulse 1.8s ease-out 1; }
+  @keyframes ready-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0,154,59,0.5); }
+    70% { box-shadow: 0 0 0 18px rgba(0,154,59,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,154,59,0); }
+  }
+  .ready-badge svg { width: 40px; height: 40px; }
+  .ready-title { font-family: "Merriweather", serif; font-weight: 300; font-size: 26px; color: #fff; margin-bottom: 10px; text-align: center; }
+  .ready-sub { font-family: "Source Sans 3", sans-serif; font-size: 14px; color: rgba(255,255,255,0.55); text-align: center; }
+
+  /* tap hint */
+  .tap-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 24px;
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .3px;
+    color: var(--green-dark);
+  }
+  .tap-hint svg {
+    width: 16px; height: 16px;
+    animation: tap-bounce 1.6s ease-in-out infinite;
+  }
+  @keyframes tap-bounce {
+    0%, 100% { transform: translateY(0) scale(1); opacity: .7; }
+    50% { transform: translateY(-3px) scale(1.1); opacity: 1; }
+  }
+
+  /* screen 4: dashboard */
+  .dash-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    margin-top: 4px;
+  }
+  .dash-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .dash-card .dash-value { font-family: "Source Sans 3", sans-serif; font-size: 22px; font-weight: 700; color: #fff; }
+  .dash-card .dash-label { font-size: 10px; letter-spacing: .5px; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-top: 4px; }
+
+  .dash-chart {
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 70px;
+    margin-top: 22px;
+    padding: 0 4px;
+  }
+  .dash-chart .bar {
+    flex: 1;
+    background: linear-gradient(180deg, var(--green), rgba(0,154,59,0.35));
+    border-radius: 4px 4px 0 0;
+  }
+  .dash-chart-label {
+    font-size: 10px;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-top: 10px;
+  }
+
+  /* ---------- display close-up ---------- */
+  .display-section {
+    padding: 130px 48px 100px;
+    margin: 20px 40px 0;
+    border-radius: 32px;
+    text-align: center;
+  }
+  .display-section h2 {
+    font-family: "Merriweather", serif;
+    font-weight: 300;
+    font-size: clamp(40px, 5.5vw, 72px);
+    letter-spacing: -0.5px;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--green-dark);
+    text-stroke: 1.5px var(--green-dark);
+    margin-bottom: 90px;
+  }
+
+  .display-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 64px;
+    max-width: 1360px;
+    margin: 0 auto;
+  }
+
+  .display-figure {
+    position: relative;
+    width: 1360px;
+    max-width: 100%;
+    opacity: 0;
+    transform: translateY(28px) scale(0.97);
+    transition: opacity .9s cubic-bezier(.22,.61,.36,1), transform .9s cubic-bezier(.22,.61,.36,1);
+  }
+  .display-figure.in-view { opacity: 1; transform: translateY(0) scale(1); }
+  .display-figure img {
+    width: 100%;
+    display: block;
+  }
+
+  .callout-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    max-width: 1200px;
+    width: 100%;
+  }
+  .callout {
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: left;
+  }
+  .callout strong {
+    display: block;
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--green-dark);
+    margin-bottom: 8px;
+  }
+  .callout p {
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #444;
+  }
+
+  @media (max-width: 900px) {
+    .callout-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 560px) {
+    .callout-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq {
+    background: var(--sage);
+    padding: 130px 48px;
+    margin: 20px 40px 0;
+    border-radius: 32px;
+    text-align: center;
+  }
+  .faq h2 {
+    font-family: "Merriweather", serif;
+    font-weight: 300;
+    font-size: clamp(40px, 5.5vw, 72px);
+    letter-spacing: -0.5px;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--green-dark);
+    text-stroke: 1.5px var(--green-dark);
+    margin-bottom: 64px;
+  }
+  .faq-list {
+    max-width: 780px;
+    margin: 0 auto;
+    text-align: left;
+  }
+
+  @media (max-width: 900px) {
+    header { padding: 18px 24px; }
+    nav ul { display:none; }
+    .hero { grid-template-columns: 1fr; padding: 40px 24px; min-height:auto; }
+    h1 { font-size: 48px; }
+    .description { padding: 60px 24px; }
+    .description p { font-size: 18px; }
+    .benefits { grid-template-columns: 1fr; gap: 28px; text-align: center; }
+    .benefits .bullet { margin-left: auto; margin-right: auto; }
+    .features { padding: 80px 24px; }
+    .feature-item-body p { padding-left: 0; }
+    .app-section { padding: 80px 24px; }
+    .app-inner { grid-template-columns: 1fr; gap: 56px; }
+    .app-copy > p { max-width: 100%; }
+    .faq { padding: 80px 24px; }
+    .cta-section { padding: 80px 24px; }
+    .cta-section h2 { font-size: 42px; }
+    .footer-inner { grid-template-columns: 1fr; gap: 40px; }
+    .footer-bottom { flex-direction: column; gap: 16px; align-items: flex-start !important; }
+  }
+
+  /* ---------- closing CTA ---------- */
+  .cta-section {
+    background: var(--ink);
+    padding: 130px 48px;
+    margin: 20px 40px 0;
+    border-radius: 32px;
+    text-align: center;
+  }
+  .cta-section h2 {
+    font-family: "Merriweather", serif;
+    font-weight: 300;
+    font-size: clamp(40px, 6vw, 80px);
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    color: transparent;
+    -webkit-text-stroke: 1.5px #fff;
+    text-stroke: 1.5px #fff;
+    margin-bottom: 20px;
+  }
+  .cta-section p {
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 19px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 44px;
+  }
+  .cta-section .cta-btn {
+    background: #fff;
+    color: var(--ink);
+    border-color: #fff;
+  }
+  .cta-section .cta-btn:hover { background: transparent; color: #fff; }
+
+  /* ---------- footer ---------- */
+  footer {
+    padding: 80px 48px 40px;
+  }
+  .footer-inner {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-bottom: 56px;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+  .footer-brand .sn-logo { margin-bottom: 16px; }
+  .footer-brand p {
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #666;
+    max-width: 260px;
+  }
+  .footer-col h4 {
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--green-dark);
+    margin-bottom: 18px;
+  }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .footer-col a {
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 14px;
+    color: #444;
+    text-decoration: none;
+  }
+  .footer-col a:hover { color: var(--green-dark); }
+
+  .footer-bottom {
+    max-width: 1200px;
+    margin: 24px auto 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .footer-bottom img { width: 110px; height: auto; }
+  .footer-bottom p {
+    font-family: "Source Sans 3", sans-serif;
+    font-size: 13px;
+    color: #999;
+  }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Does Sommelier Node fit any wine bottle?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Sommelier Node's clip fits any standard wine bottle neck, still or sparkling, with no adapters required."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How long does the Sommelier Node battery last?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A single charge lasts a full day of service. Sommelier Node is engineered by Vorwerk for all-day restaurant and winery use."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does Sommelier Node work with sparkling wine and other beverages?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Sommelier Node reads temperature and aeration for still wine, sparkling wine, and other bottled beverages."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does the Sommelier Node app connect to the device?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Sommelier Node connects to the companion app over Bluetooth. The app shows live temperature and aeration status, and can monitor multiple devices at once."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is Sommelier Node suitable for restaurants and wineries, not just home use?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Sommelier Node is built for both home and professional use. Restaurants and wineries can monitor multiple bottles and tables from a single dashboard in the app."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is included with Sommelier Node and what is the warranty?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Each Sommelier Node ships with the device, a charging dock, and access to the companion app. It is covered by Vorwerk's standard product warranty."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<div id="cursor-dot"></div>
+
+<header>
+  <div class="sn-logo">
+    <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="16" r="12" stroke="#009A3B" stroke-width="2"/>
+      <circle cx="20" cy="16" r="12" stroke="#009A3B" stroke-width="2"/>
+    </svg>
+    <span class="name">Sommelier Node</span>
+  </div>
+  <div class="nav-right">
+    <nav>
+      <ul>
+        <li><a href="#" class="hoverable">Product</a></li>
+        <li><a href="#features" class="hoverable">How it works</a></li>
+        <li><a href="#app" class="hoverable">App</a></li>
+        <li><a href="#" class="hoverable">For Restaurants</a></li>
+      </ul>
+    </nav>
+    <a href="#" class="cta-btn hoverable">Get Sommelier Node</a>
+    <div class="vorwerk-logo">
+      <img src="/assets/vorwerk-logo-gray.png" alt="Vorwerk">
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-media">
+    <img src="/assets/hero-cap.png" alt="Sommelier Node cap on a wine bottle, ring glowing green"
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+    <div class="img-placeholder" style="display:none;">
+      Hero image goes here.<br>Save it as<br><code>assets/hero-cap.png</code>
+    </div>
+  </div>
+  <div class="hero-scrim"></div>
+  <div class="hero-copy">
+    <h1>Every bottle has<br><span class="accent">its moment.</span></h1>
+    <p>A precision companion for every bottle — reading temperature and aeration in real time, so you never have to guess when it's ready.</p>
+    <div class="hero-actions">
+      <a href="#" class="cta-btn hoverable">Get Sommelier Node — $129</a>
+      <a href="#" class="ghost-link hoverable">Watch it in action</a>
+    </div>
+  </div>
+</section>
+
+<section class="description">
+  <div class="description-inner">
+    <h2>Precision, uncorked.</h2>
+    <p>Sommelier Node clips onto any bottle in seconds. Brushed metal, a single glowing ring, and a whisper of light that tells you everything you need to know — without a single glance at a screen.</p>
+    <p class="craft">Precision engineered by Vorwerk.<br>Trusted for over a century to bring quiet intelligence into everyday rituals — now for the ritual of wine. <a href="https://www.vorwerk-fibre.com" class="vorwerk-link hoverable" target="_blank" rel="noopener">Learn more about Vorwerk →</a></p>
+
+    <ul class="benefits">
+      <li><span class="tick"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.5 8.5L6 12L13.5 4" stroke="#007a2f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><strong>For the sommelier</strong><span>Read every bottle at a glance — no more guessing by eye or clock.</span></li>
+      <li><span class="tick"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.5 8.5L6 12L13.5 4" stroke="#007a2f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><strong>For the restaurant owner</strong><span>Consistent, premium service at every table, from every server.</span></li>
+      <li><span class="tick"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.5 8.5L6 12L13.5 4" stroke="#007a2f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><strong>For the winery</strong><span>Vintage-by-vintage insight that pays for itself over time.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="display-section">
+  <h2>Everything you need,<br>in one glance.</h2>
+
+  <div class="display-wrap">
+    <div class="display-figure reveal">
+      <img src="/assets/display-closeup.png" alt="Sommelier Node cap showing aeration countdown, temperature and status ring">
+    </div>
+
+    <div class="callout-grid">
+      <div class="callout">
+        <strong>Mode indicator</strong>
+        <p>Shows exactly what the device is doing right now — here, aerating.</p>
+      </div>
+      <div class="callout">
+        <strong>Aeration countdown</strong>
+        <p>Counts down the minutes left until your wine has fully breathed.</p>
+      </div>
+      <div class="callout">
+        <strong>Temperature status</strong>
+        <p>Confirms your wine is within its ideal serving range, read from the bottle.</p>
+      </div>
+      <div class="callout">
+        <strong>Status ring</strong>
+        <p>Glows amber while aerating, steady green when your wine is ready to pour.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <h2>Built for both<br>sides of the table.</h2>
+
+  <div class="tab-switcher">
+    <button class="tab-btn active hoverable" data-tab="device">Device</button>
+    <button class="tab-btn hoverable" data-tab="app">Mobile App</button>
+  </div>
+
+  <div class="feature-list active" data-list="device">
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><span class="feature-number">01</span><h3>Real-time temperature monitoring</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>Continuous, precise readings — shown on the ring, the app, or both. No more relying on guesswork or an ice bucket timer. Every degree is tracked from the moment you clip it on.</p></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><span class="feature-number">02</span><h3>Optimal aeration tracking</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>Knows exactly how long your wine needs to breathe, down to the minute. Every varietal opens differently, and Sommelier Node adjusts its reading accordingly. No more decanting by instinct.</p></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><span class="feature-number">03</span><h3>At-a-glance status ring</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>Color-coded LED, readable across the table — no phone required. Amber means it's still breathing, green means it's ready to pour. Your whole team reads the same signal, instantly.</p></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><span class="feature-number">04</span><h3>Fits any bottle</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>Universal clip, brushed steel body. No adapters, no fuss — it fits still, sparkling, and everything in between. One device for the entire cellar.</p></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><span class="feature-number">05</span><h3>All-day battery</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>Engineered by Vorwerk to outlast your busiest service. A single charge covers a full day of pours without a second thought. Charge it overnight, forget about it by noon.</p></div>
+    </div>
+
+    <p class="feature-outcome"><span class="tag">[THE RESULT]</span> Every bottle <span class="hl">treated like your best bottle</span>.</p>
+  </div>
+
+  <div class="feature-list" data-list="app">
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><span class="feature-number">01</span><h3>Never miss the perfect pour</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>Get a notification the instant any bottle is ready. No more checking back and forth between the kitchen and the table. Your phone tells you exactly when to pour.</p></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><span class="feature-number">02</span><h3>Track your whole cellar</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>See every open bottle's status from one screen. Perfect for busy services with multiple tables breathing at once. Nothing falls through the cracks.</p></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><span class="feature-number">03</span><h3>Build a personal wine memory</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>Save ideal temperature and aeration profiles by vintage and varietal. Next time you open the same wine, Sommelier Node already knows how to treat it. Your palate gets sharper with every bottle.</p></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><span class="feature-number">04</span><h3>Manage every table at once</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>Monitor multiple Sommelier Nodes from a single screen. Built for restaurants and wineries running several bottles in parallel. One staff member, full visibility.</p></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><span class="feature-number">05</span><h3>Turn every bottle into a lesson</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>Review past pours to refine your palate over time. See patterns across vintages, varietals, and serving temperatures. Every glass becomes part of your ongoing education.</p></div>
+    </div>
+
+    <p class="feature-outcome"><span class="tag">[THE RESULT]</span> Every table <span class="hl">served like your best sommelier is watching</span>.</p>
+  </div>
+</section>
+
+<section class="app-section" id="app">
+  <div class="app-inner">
+    <div class="app-copy">
+      <h2>Your cellar.<br>In your pocket.</h2>
+      <p>Track every bottle in real time. Save wine profiles, get notified the moment a bottle is ready, and manage every table from a single, calm screen.</p>
+
+      <ul class="app-features">
+        <li><span class="tick"><svg viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5L6 12L13.5 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Live status for every open bottle</li>
+        <li><span class="tick"><svg viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5L6 12L13.5 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Instant notification when it's ready</li>
+        <li><span class="tick"><svg viewBox="0 0 16 16" fill="none"><path d="M2.5 8.5L6 12L13.5 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Personal wine profiles, saved by vintage</li>
+      </ul>
+
+      <div class="app-store-links">
+        <a href="#" class="store-btn hoverable">
+          <svg viewBox="0 0 24 24" fill="#fff"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.11 7.31c1.34.07 2.28.74 3.06.8 1.17-.24 2.29-.93 3.55-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.49 7.13-.55 1.44-1.26 2.86-2.56 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+          <span class="store-label"><span class="store-sub">Download on the</span><span class="store-main">App Store</span></span>
+        </a>
+        <a href="#" class="store-btn hoverable">
+          <svg viewBox="0 0 24 24" fill="#fff"><path d="M3.6 2.3c-.4.2-.6.6-.6 1.1v17.2c0 .5.2.9.6 1.1l9.9-9.7L3.6 2.3zM15 12l2.6-2.5-8.5-4.9L15 12zM15 12l-5.9 7.4 8.5-4.9L15 12zM18.3 9.9L16 11.9v.2l2.3 2c1-.6 1.7-1.1 1.7-2.1s-.7-1.5-1.7-2.1z"/></svg>
+          <span class="store-label"><span class="store-sub">Get it on</span><span class="store-main">Google Play</span></span>
+        </a>
+      </div>
+    </div>
+
+    <div class="phone-wrap reveal">
+      <div class="phone hoverable" id="phone">
+        <div class="phone-screen">
+
+          <div class="screen-viewport">
+            <div class="screen-panel active" data-panel="0">
+              <span class="phone-eyebrow">Bin 04 — Barolo</span>
+              <span class="phone-wine">Cantina Vietti<br>2019</span>
+
+              <div class="progress-ring">
+                <svg viewBox="0 0 168 168">
+                  <circle class="track" cx="84" cy="84" r="78"/>
+                  <circle class="fill" cx="84" cy="84" r="78"/>
+                </svg>
+                <div class="progress-label">
+                  <span class="big">3 min</span>
+                  <span class="small">Aerating</span>
+                </div>
+              </div>
+
+              <div class="phone-stats">
+                <div class="phone-stat"><div class="value">17°C</div><div class="label">Temp</div></div>
+                <div class="phone-stat"><div class="value">75%</div><div class="label">Aerated</div></div>
+                <div class="phone-stat"><div class="value">2</div><div class="label">Tables</div></div>
+              </div>
+            </div>
+
+            <div class="screen-panel" data-panel="1">
+              <span class="phone-eyebrow">Tonight — 4 open</span>
+              <span class="phone-wine" style="margin-bottom:20px;">Cellar</span>
+              <div class="cellar-list">
+                <div class="cellar-row">
+                  <span class="status-dot ready"></span>
+                  <div class="cellar-info"><div class="cellar-name">Cantina Vietti 2019</div><div class="cellar-table">Table 4</div></div>
+                  <span class="cellar-state ready">Ready</span>
+                </div>
+                <div class="cellar-row">
+                  <span class="status-dot aerating"></span>
+                  <div class="cellar-info"><div class="cellar-name">Domaine Leroy 2018</div><div class="cellar-table">Table 7</div></div>
+                  <span class="cellar-state aerating">Aerating</span>
+                </div>
+                <div class="cellar-row">
+                  <span class="status-dot ready"></span>
+                  <div class="cellar-info"><div class="cellar-name">Ridge Monte Bello 2020</div><div class="cellar-table">Table 9</div></div>
+                  <span class="cellar-state ready">Ready</span>
+                </div>
+                <div class="cellar-row">
+                  <span class="status-dot idle"></span>
+                  <div class="cellar-info"><div class="cellar-name">Château Margaux 2015</div><div class="cellar-table">Table 2</div></div>
+                  <span class="cellar-state idle">Idle</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="screen-panel" data-panel="2">
+              <span class="phone-eyebrow">This week</span>
+              <span class="phone-wine" style="margin-bottom:16px;">Dashboard</span>
+              <div class="dash-stats">
+                <div class="dash-card"><div class="dash-value">142</div><div class="dash-label">Bottles served</div></div>
+                <div class="dash-card"><div class="dash-value">98%</div><div class="dash-label">Serving accuracy</div></div>
+                <div class="dash-card"><div class="dash-value">4.9</div><div class="dash-label">Avg. rating</div></div>
+                <div class="dash-card"><div class="dash-value">6</div><div class="dash-label">Active tables</div></div>
+              </div>
+              <div class="dash-chart">
+                <span class="bar" style="height:40%;"></span>
+                <span class="bar" style="height:65%;"></span>
+                <span class="bar" style="height:50%;"></span>
+                <span class="bar" style="height:85%;"></span>
+                <span class="bar" style="height:60%;"></span>
+                <span class="bar" style="height:100%;"></span>
+                <span class="bar" style="height:70%;"></span>
+              </div>
+              <span class="dash-chart-label">Bottles served — last 7 days</span>
+            </div>
+
+            <div class="screen-panel ready-panel" data-panel="3">
+              <div class="ready-badge">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5l5 5L20 7" stroke="#009A3B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="ready-title">Ready to pour</div>
+              <div class="ready-sub">Cantina Vietti 2019 — Table 4</div>
+            </div>
+          </div>
+
+          <div class="phone-nav">
+            <svg class="nav-icon active" viewBox="0 0 24 24" fill="none"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none"><path d="M8 3h8M9 3v5.5a3 3 0 0 0-1.2 2.4V19a2 2 0 0 0 2 2h4.4a2 2 0 0 0 2-2v-8.1a3 3 0 0 0-1.2-2.4V3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none"><path d="M4 19V10M10 19V5M16 19v-7M22 19V9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="tap-hint">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M9 11.5V5a1.5 1.5 0 0 1 3 0v5m0 .5V4a1.5 1.5 0 0 1 3 0v6.5m0 .5V6.5a1.5 1.5 0 0 1 3 0V14c0 4-2.5 7-6 7s-5-2-6.5-4.5L4.3 14a1.4 1.4 0 0 1 2-2l1.7 1.7" stroke="#007a2f" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Tap the phone to explore
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="faq" id="faq">
+  <h2>Questions,<br>answered.</h2>
+  <div class="faq-list">
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><h3>Does Sommelier Node fit any wine bottle?</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>Yes. The clip fits any standard wine bottle neck, still or sparkling, with no adapters required.</p></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><h3>How long does the battery last?</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>A single charge lasts a full day of service — engineered by Vorwerk for all-day restaurant and winery use.</p></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><h3>Does it work with sparkling wine and other beverages?</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>Yes. Sommelier Node reads temperature and aeration for still wine, sparkling wine, and other bottled beverages.</p></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><h3>How does the app connect to the device?</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>Over Bluetooth. The app shows live temperature and aeration status, and can monitor multiple devices at once.</p></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><h3>Is it suitable for restaurants and wineries, not just home use?</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>Yes. Restaurants and wineries can monitor multiple bottles and tables from a single dashboard in the app.</p></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-item-header hoverable">
+        <div class="feature-item-title"><h3>What's included, and what's the warranty?</h3></div>
+        <svg class="chevron" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#009A3B" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="feature-item-body"><p>Each Sommelier Node ships with the device, a charging dock, and access to the companion app — covered by Vorwerk's standard product warranty.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <h2>Some things shouldn't be rushed.</h2>
+  <p>Bring precision to every bottle you open.</p>
+  <a href="#" class="cta-btn hoverable">Get Sommelier Node — $129</a>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="sn-logo">
+        <svg viewBox="-2 -2 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="16" r="12" stroke="#009A3B" stroke-width="2"/>
+          <circle cx="20" cy="16" r="12" stroke="#009A3B" stroke-width="2"/>
+        </svg>
+        <span class="name">Sommelier Node</span>
+      </div>
+      <p>A precision companion for every bottle — part of the Vorwerk Home ecosystem.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="#" class="hoverable">Overview</a></li>
+        <li><a href="#how-it-works" class="hoverable">How it works</a></li>
+        <li><a href="#app" class="hoverable">App</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="https://www.vorwerk-fibre.com" class="hoverable" target="_blank" rel="noopener">About Vorwerk</a></li>
+        <li><a href="#" class="hoverable">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#" class="hoverable">Privacy</a></li>
+        <li><a href="#" class="hoverable">Terms</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Vorwerk. Sommelier Node is part of the Vorwerk Home ecosystem.</p>
+    <img src="/assets/vorwerk-logo-gray.png" alt="Vorwerk">
+  </div>
+</footer>
+
+<script>
+  // custom dot cursor
+  const dot = document.getElementById('cursor-dot');
+  window.addEventListener('mousemove', (e) => {
+    dot.style.left = e.clientX + 'px';
+    dot.style.top = e.clientY + 'px';
+  });
+  document.querySelectorAll('.hoverable').forEach(el => {
+    el.addEventListener('mouseenter', () => dot.classList.add('hovered'));
+    el.addEventListener('mouseleave', () => dot.classList.remove('hovered'));
+  });
+
+  // scroll-reveal for elements marked .reveal
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  // features: tab switcher
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const target = btn.dataset.tab;
+      document.querySelectorAll('.feature-list').forEach(list => {
+        list.classList.toggle('active', list.dataset.list === target);
+      });
+    });
+  });
+
+  // features: accordion
+  document.querySelectorAll('.feature-item-header').forEach(header => {
+    header.addEventListener('click', () => {
+      header.closest('.feature-item').classList.toggle('open');
+    });
+  });
+
+  // phone: switchable screens (click-to-advance)
+  const phoneScreenCount = document.querySelectorAll('.screen-panel').length;
+  const phoneNavIcons = document.querySelectorAll('.phone-nav .nav-icon').length;
+  let currentPhoneScreen = 0;
+
+  function showPhoneScreen(index) {
+    currentPhoneScreen = index;
+    document.querySelectorAll('.screen-panel').forEach(panel => {
+      panel.classList.toggle('active', Number(panel.dataset.panel) === index);
+    });
+    document.querySelectorAll('.phone-nav .nav-icon').forEach((icon, i) => {
+      icon.classList.toggle('active', i === index % phoneNavIcons);
+    });
+  }
+
+  document.getElementById('phone').addEventListener('click', () => {
+    showPhoneScreen((currentPhoneScreen + 1) % phoneScreenCount);
+  });
+</script>
+
+</body>
+</html>
