@@ -40,30 +40,28 @@
   }
 
   /* ============ TYPOGRAPHY SYSTEM ============ */
+  /* Deliberately NOT the outlined-serif LP headline treatment — same palette,
+     same pill buttons, same body font, but bold solid sans for headlines so this
+     reads as its own thing: close family, distinct voice. */
 
   h1 {
-    font-family: "Merriweather", serif;
-    font-weight: 300;
-    font-size: clamp(48px, 7.5vw, 108px);
-    line-height: 1.06;
-    letter-spacing: -1px;
-    color: transparent;
-    -webkit-text-stroke: 1.5px var(--ink);
-    text-stroke: 1.5px var(--ink);
+    font-family: "Source Sans 3", sans-serif;
+    font-weight: 800;
+    font-size: clamp(42px, 6.4vw, 92px);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: var(--ink);
   }
   h1 .accent {
-    -webkit-text-stroke: 1.5px var(--green-dark);
-    text-stroke: 1.5px var(--green-dark);
+    color: var(--green-dark);
   }
 
   h2 {
-    font-family: "Merriweather", serif;
-    font-weight: 300;
-    font-size: clamp(38px, 5vw, 64px);
-    letter-spacing: -0.5px;
-    color: transparent;
-    -webkit-text-stroke: 1.5px var(--green-dark);
-    text-stroke: 1.5px var(--green-dark);
+    font-family: "Source Sans 3", sans-serif;
+    font-weight: 800;
+    font-size: clamp(30px, 3.6vw, 46px);
+    letter-spacing: -0.01em;
+    color: var(--ink);
   }
 
   .lede {
@@ -111,22 +109,21 @@
   .icon-circle svg { width: 20px; height: 20px; stroke: var(--green-dark); stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
   /* ============ SECTION RHYTHM (zebra) ============ */
+  /* Full-bleed flat bands, no rounded insets — the LP's signature "card" motif
+     is deliberately not reused here. */
 
   .sage-section {
-    background: var(--sage);
+    background: #EEF2DC;
     padding: 120px 48px;
-    margin: 20px 40px 0;
-    border-radius: 32px;
     text-align: center;
   }
   .plain-section {
     padding: 120px 48px;
-    margin: 20px 40px 0;
     text-align: center;
   }
 
   @media (max-width: 700px) {
-    .sage-section, .plain-section { padding: 72px 24px; margin: 12px 12px 0; }
+    .sage-section, .plain-section { padding: 72px 24px; }
   }
 
   .section-inner { max-width: 900px; margin: 0 auto; }
@@ -355,8 +352,7 @@
   }
   .embed-full iframe {
     width: 100%;
-    height: 82vh;
-    min-height: 560px;
+    height: 600px; /* replaced by JS with the real content height on load */
     border: none;
     display: block;
   }
@@ -437,14 +433,10 @@
   .closing {
     background: var(--ink);
     padding: 120px 48px 90px;
-    margin: 20px 40px 0;
-    border-radius: 32px;
     text-align: center;
   }
   .closing h2 {
-    color: transparent;
-    -webkit-text-stroke: 1.5px #fff;
-    text-stroke: 1.5px #fff;
+    color: #fff;
   }
 
   .closing .photo {
@@ -475,7 +467,7 @@
   }
 
   @media (max-width: 700px) {
-    .closing { padding: 72px 24px 56px; margin: 12px 12px 0; }
+    .closing { padding: 72px 24px 56px; }
   }
 
   /* ============ FOOTER FINE PRINT ============ */
@@ -602,13 +594,13 @@
   <h2>The landing page</h2>
 </div>
 <div class="embed-full">
-  <iframe src="index.html" title="Live landing page" loading="lazy"></iframe>
+  <iframe id="landing-iframe" src="index.html" title="Live landing page" loading="lazy" scrolling="no" onload="autosizeIframe(this)"></iframe>
 </div>
-<p class="embed-caption">Fully live — scroll, click, explore. Same file that's deployed.</p>
+<p class="embed-caption">The full page, live — nothing cropped. Same file that's deployed.</p>
 
 <!-- ============ SEPARATOR ============ -->
 <div class="separator">
-  <p>Same system. Different surface.</p>
+  <p>Now, on mobile.</p>
 </div>
 
 <!-- ============ MOBILE APP EMBED (plain) ============ -->
@@ -666,6 +658,40 @@
 <footer>
   <p>Case study · UX/UI Design</p>
 </footer>
+
+<script>
+  function measureAndSet(iframe) {
+    try {
+      const doc = iframe.contentDocument;
+      if (!doc || !doc.documentElement) return;
+      const height = Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight);
+      const prev = iframe._maxHeight || 0;
+      if (height > prev) {
+        iframe._maxHeight = height;
+        iframe.style.height = height + 'px';
+      }
+    } catch (e) { /* cross-origin fallback: keep default height */ }
+  }
+
+  function autosizeIframe(iframe) {
+    // The landing page's hero uses `min-height: 86vh`. If we resize this iframe
+    // to match its own content height, that changes the iframe's viewport height,
+    // which changes 86vh, which changes the content height again — an infinite
+    // feedback loop. Neutralize vh-based sizing inside the embed first so the
+    // page's height becomes stable and independent of the iframe's own box size.
+    try {
+      const doc = iframe.contentDocument;
+      const style = doc.createElement('style');
+      style.textContent = '.hero { min-height: 640px !important; }';
+      doc.head.appendChild(style);
+    } catch (e) { /* cross-origin: fall back to default sizing */ }
+
+    measureAndSet(iframe);
+    [200, 500, 900, 1400].forEach(delay => {
+      setTimeout(() => measureAndSet(iframe), delay);
+    });
+  }
+</script>
 
 </body>
 </html>
