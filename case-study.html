@@ -163,7 +163,7 @@
     color: var(--green-dark);
   }
   .stat .label {
-    font-size: 13px;
+    font-size: 14.5px;
     font-weight: 600;
     color: var(--muted);
     text-transform: uppercase;
@@ -188,8 +188,8 @@
 
   .benefit-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 36px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 36px 32px;
     text-align: left;
     margin-top: 64px;
   }
@@ -201,8 +201,8 @@
     margin-bottom: 8px;
   }
   .benefit span {
-    font-size: 14.5px;
-    line-height: 1.55;
+    font-size: 16px;
+    line-height: 1.6;
     color: #3a3a3a;
   }
   .benefit code {
@@ -210,7 +210,7 @@
     color: var(--green-dark);
     padding: 1px 6px;
     border-radius: 4px;
-    font-size: 13px;
+    font-size: 14px;
     font-family: ui-monospace, monospace;
   }
 
@@ -224,13 +224,29 @@
   /* Flow diagram */
   .flow-wrap { margin-top: 88px; }
   .flow-title {
-    font-size: 12px;
+    font-size: 13.5px;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--green-dark);
+    margin-bottom: 12px;
+  }
+  .flow-sub {
+    font-size: 15px;
+    color: var(--muted);
     margin-bottom: 28px;
   }
+  .flow-loop {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--green-dark);
+  }
+  .flow-loop svg { width: 18px; height: 18px; stroke: var(--green-dark); stroke-width: 2; fill: none; }
   .flow {
     display: flex;
     align-items: center;
@@ -296,7 +312,7 @@
   .timeline-hours {
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
+    font-size: 13.5px;
     font-weight: 600;
     color: var(--muted);
     margin-bottom: 10px;
@@ -355,13 +371,6 @@
     height: 600px; /* replaced by JS with the real content height on load */
     border: none;
     display: block;
-  }
-
-  .embed-caption {
-    text-align: center;
-    font-size: 14.5px;
-    color: var(--muted);
-    padding: 24px 24px 0;
   }
 
   /* ============ SEPARATOR ============ */
@@ -433,48 +442,42 @@
   }
   .closing h2 {
     color: #fff;
+    font-size: clamp(24px, 3vw, 36px);
+    max-width: 760px;
+    margin: 0 auto 20px;
   }
 
   .closing .photo {
-    width: 92px; height: 92px;
+    width: 160px; height: 160px;
     border-radius: 50%;
     object-fit: cover;
-    margin: 56px auto 22px;
+    margin: 56px auto 32px;
     filter: grayscale(1) contrast(1.05);
-    border: 2px solid rgba(255,255,255,0.2);
+    border: 3px solid rgba(255,255,255,0.2);
   }
   .closing .signature {
-    width: 200px;
-    margin: 0 auto 6px;
+    width: 460px;
+    max-width: 90%;
+    margin: 0 auto 10px;
     filter: invert(1);
-    opacity: 0.9;
+    opacity: 0.92;
   }
   .closing .name {
     font-family: "Merriweather", serif;
     font-weight: 700;
-    font-size: 19px;
+    font-size: 21px;
     color: #fff;
-    margin-top: 6px;
+    margin-top: 10px;
   }
   .closing .tagline {
-    font-size: 14px;
-    color: rgba(255,255,255,0.55);
+    font-size: 16px;
+    color: rgba(255,255,255,0.6);
     margin-top: 10px;
   }
 
   @media (max-width: 700px) {
     .closing { padding: 72px 24px 56px; }
-  }
-
-  /* ============ FOOTER FINE PRINT ============ */
-
-  footer {
-    padding: 40px 48px 56px;
-    text-align: center;
-  }
-  footer p {
-    font-size: 13px;
-    color: #999;
+    .closing .signature { width: 340px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -493,7 +496,6 @@
     <div class="stat-row">
       <div class="stat"><div class="num">~3 hrs</div><div class="label">Hands-on, total</div></div>
       <div class="stat"><div class="num">3</div><div class="label">Live deliverables</div></div>
-      <div class="stat"><div class="num">1</div><div class="label">Design system</div></div>
       <div class="stat"><div class="num">0</div><div class="label">Lines hand-coded</div></div>
     </div>
 
@@ -537,13 +539,24 @@
         <strong>Model &amp; effort, tuned per task</strong>
         <span>High effort for design calls. Fast/cheap for repetitive edits</span>
       </div>
+      <div class="benefit">
+        <div class="icon-circle"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z"/></svg></div>
+        <strong>UX/UI Pro Max</strong>
+        <span>Design-system skill — searched palettes, type pairings and layout patterns before a single pixel was placed</span>
+      </div>
+      <div class="benefit">
+        <div class="icon-circle"><svg viewBox="0 0 24 24"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></div>
+        <strong>UX writing pass</strong>
+        <span>ux-copy skill — every headline, label, and CTA reviewed for clarity and tone, not just written once</span>
+      </div>
     </div>
 
     <div class="flow-wrap">
       <div class="flow-title">The system, in one picture</div>
+      <p class="flow-sub">Not linear — refined across several passes, not a single one-shot prompt</p>
       <div class="flow">
         <div class="flow-node">Brief</div>
-        <div class="flow-arrow">→</div>
+        <div class="flow-arrow">⇄</div>
         <div class="flow-node hub">CLAUDE.md<span>design rules</span></div>
         <div class="flow-arrow">→</div>
         <div class="flow-branch">
@@ -551,12 +564,14 @@
           <div class="flow-node">Mobile App</div>
           <div class="flow-node">Pitch Deck</div>
         </div>
-        <div class="flow-arrow">→</div>
+        <div class="flow-arrow">⇄</div>
         <div class="flow-node">GitHub Pages</div>
       </div>
+      <div class="flow-loop">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 3v5h5"/></svg>
+        Feedback from each output looped back into CLAUDE.md — iterated, not one-shot
+      </div>
     </div>
-
-    <p class="quote">I designed the rules. The system did the repeating.</p>
   </div>
 </section>
 
@@ -587,27 +602,23 @@
 
 <!-- ============ LANDING PAGE — FULL WIDTH EMBED ============ -->
 <div class="embed-heading" id="landing-embed">
-  <h2>The landing page</h2>
+  <h2>The result: a landing page.</h2>
 </div>
 <div class="embed-full">
   <iframe id="landing-iframe" src="index.html" title="Live landing page" loading="lazy" scrolling="no" onload="autosizeIframe(this)"></iframe>
 </div>
-<p class="embed-caption">The full page, live — nothing cropped. Same file that's deployed.</p>
 
 <!-- ============ SEPARATOR ============ -->
 <div class="separator">
-  <p>Now, on mobile.</p>
+  <p>And the result, on mobile.</p>
 </div>
 
 <!-- ============ MOBILE APP EMBED ============ -->
 <section class="plain-section app-section" id="app-embed">
   <div class="section-inner">
-    <h2>The mobile app</h2>
-
     <div class="app-embed-frame">
       <iframe src="app/index.html" title="Live mobile app prototype" loading="lazy"></iframe>
     </div>
-    <p class="embed-caption">Tap through 4 real screens — service view, bottle detail, analytics, settings.</p>
   </div>
 </section>
 
@@ -630,25 +641,19 @@
         <span>Caught + fixed a real post-deploy bug (broken asset path)</span>
       </div>
     </div>
-
-    <p class="shipped-close">What you're looking at right now is what shipped. No handoff needed.</p>
   </div>
 </section>
 
 <!-- ============ CLOSING / SIGN-OFF (dark bookend) ============ -->
 <section class="closing">
   <div class="section-inner">
-    <h2>See it for yourself.</h2>
+    <h2>This case study is itself a live demo — of how Marcel Dziedzic works with AI as a designer.</h2>
     <img class="photo" src="case-study-assets/photo.png" alt="Marcel Dziedzic">
     <img class="signature" src="case-study-assets/signature.png" alt="Signature — Marcel Dziedzic">
     <div class="name">Marcel Dziedzic</div>
     <p class="tagline">Designed and built with Claude — Code + Design.</p>
   </div>
 </section>
-
-<footer>
-  <p>Case study · UX/UI Design</p>
-</footer>
 
 <script>
   function measureAndSet(iframe) {
