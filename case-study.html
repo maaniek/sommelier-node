@@ -163,7 +163,7 @@
     color: var(--green-dark);
   }
   .stat .label {
-    font-size: 14.5px;
+    font-size: 15.5px;
     font-weight: 600;
     color: var(--muted);
     text-transform: uppercase;
@@ -210,7 +210,7 @@
     color: var(--green-dark);
     padding: 1px 6px;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 15px;
     font-family: ui-monospace, monospace;
   }
 
@@ -224,7 +224,7 @@
   /* Flow diagram */
   .flow-wrap { margin-top: 88px; }
   .flow-title {
-    font-size: 13.5px;
+    font-size: 14.5px;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -232,7 +232,7 @@
     margin-bottom: 12px;
   }
   .flow-sub {
-    font-size: 15px;
+    font-size: 16px;
     color: var(--muted);
     margin-bottom: 28px;
   }
@@ -242,7 +242,7 @@
     justify-content: center;
     gap: 10px;
     margin-top: 20px;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     color: var(--green-dark);
   }
@@ -259,7 +259,7 @@
     border: 1.5px solid var(--green-dark);
     color: var(--ink);
     font-weight: 600;
-    font-size: 14px;
+    font-size: 15px;
     padding: 13px 20px;
     border-radius: 10px;
     text-align: center;
@@ -271,7 +271,7 @@
     color: #fff;
     font-weight: 700;
   }
-  .flow-node.hub span { display: block; font-weight: 500; font-size: 11px; opacity: 0.8; margin-top: 2px; }
+  .flow-node.hub span { display: block; font-weight: 500; font-size: 12.5px; opacity: 0.85; margin-top: 2px; }
   .flow-arrow { color: var(--green-dark); font-size: 20px; padding: 0 14px; flex-shrink: 0; }
   .flow-branch { display: flex; flex-direction: column; gap: 10px; }
 
@@ -312,7 +312,7 @@
   .timeline-hours {
     display: flex;
     justify-content: space-between;
-    font-size: 13.5px;
+    font-size: 14.5px;
     font-weight: 600;
     color: var(--muted);
     margin-bottom: 10px;
@@ -330,7 +330,7 @@
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 14px;
     text-align: center;
     padding: 4px 8px;
   }
@@ -338,15 +338,6 @@
   .tl-seg:nth-child(2) { background: var(--green-dark); color: #fff; flex: 1; }
   .tl-seg:nth-child(3) { background: var(--green); color: #fff; flex: 1; }
   .tl-seg:nth-child(4) { background: var(--sage); color: var(--ink); flex: 0.5; }
-
-  .timeline-close {
-    text-align: center;
-    font-family: "Merriweather", serif;
-    font-weight: 700;
-    font-size: 18px;
-    color: var(--ink);
-    margin-top: 32px;
-  }
 
   @media (max-width: 700px) {
     .timeline-bar { flex-direction: column; height: auto; }
@@ -371,20 +362,6 @@
     height: 600px; /* replaced by JS with the real content height on load */
     border: none;
     display: block;
-  }
-
-  /* ============ SEPARATOR ============ */
-
-  .separator {
-    padding: 64px 24px;
-    text-align: center;
-  }
-  .separator p {
-    font-family: "Merriweather", serif;
-    font-weight: 300;
-    font-style: italic;
-    font-size: clamp(22px, 3vw, 30px);
-    color: var(--green-dark);
   }
 
   /* ============ MOBILE APP EMBED ============ */
@@ -462,18 +439,6 @@
     filter: invert(1);
     opacity: 0.92;
   }
-  .closing .name {
-    font-family: "Merriweather", serif;
-    font-weight: 700;
-    font-size: 21px;
-    color: #fff;
-    margin-top: 10px;
-  }
-  .closing .tagline {
-    font-size: 16px;
-    color: rgba(255,255,255,0.6);
-    margin-top: 10px;
-  }
 
   @media (max-width: 700px) {
     .closing { padding: 72px 24px 56px; }
@@ -491,7 +456,7 @@
 <header class="hero">
   <div class="hero-inner">
     <h1>A case study in<br><span class="accent">AI-native</span> design.</h1>
-    <p class="lede">From brief to three shipped products in under three hours — designed and built end-to-end with Claude.</p>
+    <p class="lede">A case study: a real product-launch brief — landing page, mobile app, and investor pitch for a smart wine accessory — designed and shipped in under three hours, using AI tools end to end.</p>
 
     <div class="stat-row">
       <div class="stat"><div class="num">~3 hrs</div><div class="label">Hands-on, total</div></div>
@@ -516,8 +481,8 @@
     <div class="benefit-grid">
       <div class="benefit">
         <div class="icon-circle"><svg viewBox="0 0 24 24"><path d="M9.5 2a4.5 4.5 0 0 0-4.4 5.5A4 4 0 0 0 4 15a4 4 0 0 0 3 6.5h1a2 2 0 0 0 2-2V4.5A2.5 2.5 0 0 0 9.5 2z"/><path d="M14.5 2a4.5 4.5 0 0 1 4.4 5.5A4 4 0 0 1 20 15a4 4 0 0 1-3 6.5h-1a2 2 0 0 1-2-2V4.5A2.5 2.5 0 0 1 14.5 2z"/></svg></div>
-        <strong>Persistent brand memory</strong>
-        <span><code>CLAUDE.md</code> — one file, every screen obeys it</span>
+        <strong>Advanced file architecture</strong>
+        <span><code>CLAUDE.md</code> + structured project folders — every session picked up exactly where the last one left off</span>
       </div>
       <div class="benefit">
         <div class="icon-circle"><svg viewBox="0 0 24 24"><path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.402 2.402 0 0 1-3.409-.001l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.315 8.685a.979.979 0 0 1 .837-.276c.47.07.802.48.968.925a2.501 2.501 0 1 0 3.214-3.214c-.446-.166-.855-.497-.925-.968a.979.979 0 0 1 .276-.837l1.611-1.611A2.402 2.402 0 0 1 12 1.998c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02z"/></svg></div>
@@ -542,12 +507,12 @@
       <div class="benefit">
         <div class="icon-circle"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z"/></svg></div>
         <strong>UX/UI Pro Max</strong>
-        <span>Design-system skill — searched palettes, type pairings and layout patterns before a single pixel was placed</span>
+        <span><code>ui-ux-pro-max</code> → design-system search, before a single pixel was placed</span>
       </div>
       <div class="benefit">
         <div class="icon-circle"><svg viewBox="0 0 24 24"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg></div>
         <strong>UX writing pass</strong>
-        <span>ux-copy skill — every headline, label, and CTA reviewed for clarity and tone, not just written once</span>
+        <span><code>ux-copy</code> → every headline and CTA reviewed for clarity and tone</span>
       </div>
     </div>
 
@@ -557,7 +522,7 @@
       <div class="flow">
         <div class="flow-node">Brief</div>
         <div class="flow-arrow">⇄</div>
-        <div class="flow-node hub">CLAUDE.md<span>design rules</span></div>
+        <div class="flow-node hub">Claude Setup<span>CLAUDE.md · skills · connectors</span></div>
         <div class="flow-arrow">→</div>
         <div class="flow-branch">
           <div class="flow-node">Landing Page</div>
@@ -569,7 +534,7 @@
       </div>
       <div class="flow-loop">
         <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 3v5h5"/></svg>
-        Feedback from each output looped back into CLAUDE.md — iterated, not one-shot
+        Feedback from each output looped back into the setup — iterated, not one-shot
       </div>
     </div>
   </div>
@@ -596,25 +561,22 @@
         <div class="tl-seg">Deck + Deploy</div>
       </div>
     </div>
-    <p class="timeline-close">Brief to 3 live products: ~3 hours, start to finish.</p>
   </div>
 </section>
 
 <!-- ============ LANDING PAGE — FULL WIDTH EMBED ============ -->
 <div class="embed-heading" id="landing-embed">
-  <h2>The result: a landing page.</h2>
+  <h2>What actually shipped: the landing page.</h2>
 </div>
 <div class="embed-full">
   <iframe id="landing-iframe" src="index.html" title="Live landing page" loading="lazy" scrolling="no" onload="autosizeIframe(this)"></iframe>
 </div>
 
-<!-- ============ SEPARATOR ============ -->
-<div class="separator">
-  <p>And the result, on mobile.</p>
-</div>
-
 <!-- ============ MOBILE APP EMBED ============ -->
-<section class="plain-section app-section" id="app-embed">
+<div class="embed-heading app-section" id="app-embed">
+  <h2>What actually shipped: the mobile app.</h2>
+</div>
+<section class="plain-section app-section">
   <div class="section-inner">
     <div class="app-embed-frame">
       <iframe src="app/index.html" title="Live mobile app prototype" loading="lazy"></iframe>
@@ -647,11 +609,9 @@
 <!-- ============ CLOSING / SIGN-OFF (dark bookend) ============ -->
 <section class="closing">
   <div class="section-inner">
-    <h2>This case study is itself a live demo — of how Marcel Dziedzic works with AI as a designer.</h2>
+    <h2>This page is the proof — built the exact same way, end to end, with Claude.</h2>
     <img class="photo" src="case-study-assets/photo.png" alt="Marcel Dziedzic">
     <img class="signature" src="case-study-assets/signature.png" alt="Signature — Marcel Dziedzic">
-    <div class="name">Marcel Dziedzic</div>
-    <p class="tagline">Designed and built with Claude — Code + Design.</p>
   </div>
 </section>
 
