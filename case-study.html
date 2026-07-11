@@ -373,7 +373,7 @@
     position: relative;
     display: inline-block;
     width: 13px; height: 13px;
-    margin-right: 12px;
+    margin-right: 22px;
     vertical-align: middle;
     margin-bottom: 5px;
   }
@@ -381,13 +381,13 @@
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    background: #e0342f;
+    background: var(--green);
   }
   .live-icon .pulse {
     position: absolute;
     inset: -7px;
     border-radius: 50%;
-    border: 2px solid rgba(224,52,47,0.6);
+    border: 2px solid rgba(0,154,59,0.6);
     animation: live-pulse 1.8s ease-out infinite;
   }
   @keyframes live-pulse {
@@ -399,7 +399,7 @@
     line-height: 1;
     color: var(--green-dark);
     margin-top: 18px;
-    animation: arrow-bounce 2.8s ease-in-out infinite;
+    animation: arrow-bounce 1.4s ease-in-out infinite;
   }
   @keyframes arrow-bounce {
     0%, 100% { transform: translateY(0); }
@@ -562,10 +562,7 @@
 
     <div class="stat-row">
       <div class="stat">
-        <div class="num num-with-icon">
-          <span class="oled-badge">3H</span>
-          3 hrs
-        </div>
+        <div class="num">3 hrs</div>
         <div class="label">Hands-on, total</div>
       </div>
       <div class="stat"><div class="num">3</div><div class="label">Live deliverables</div></div>
@@ -674,7 +671,7 @@
 
 <!-- ============ LANDING PAGE — FULL WIDTH EMBED ============ -->
 <div class="embed-heading" id="landing-embed">
-  <h2><span class="live-icon"><span class="pulse"></span><span class="core"></span></span>See it live – the landing page.</h2>
+  <h2><span class="live-icon"><span class="pulse"></span><span class="core"></span></span>See it live – The Landing Page.</h2>
   <div class="embed-arrow">↓</div>
 </div>
 <div class="embed-full">
@@ -683,7 +680,7 @@
 
 <!-- ============ MOBILE APP EMBED ============ -->
 <div class="embed-heading app-section" id="app-embed">
-  <h2><span class="live-icon"><span class="pulse"></span><span class="core"></span></span>See it live – the mobile app.</h2>
+  <h2><span class="live-icon"><span class="pulse"></span><span class="core"></span></span>See it live – The Mobile App.</h2>
   <div class="embed-arrow">↓</div>
 </div>
 <section class="plain-section app-section app-section-tight">
