@@ -162,6 +162,11 @@
     font-size: 40px;
     color: var(--green-dark);
   }
+  .num-with-icon { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .stat-icon { width: 30px; height: 30px; stroke: var(--green-dark); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+  .heading-with-icon { display: flex; align-items: center; justify-content: center; gap: 14px; }
+  .heading-with-icon svg { width: 0.8em; height: 0.8em; stroke: var(--green-dark); stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
   .stat .label {
     font-size: 15.5px;
     font-weight: 600;
@@ -351,6 +356,16 @@
     text-align: center;
     padding: 96px 48px 48px;
   }
+  .embed-arrow {
+    font-size: 28px;
+    color: var(--green-dark);
+    margin-top: 14px;
+    animation: arrow-bounce 2s ease-in-out infinite;
+  }
+  @keyframes arrow-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+  }
 
   .embed-full {
     width: 100%;
@@ -372,11 +387,14 @@
   .app-section {
     background: #D8EAE0;
   }
+  .app-section-tight {
+    padding-top: 24px;
+  }
 
   .app-embed-frame {
     display: flex;
     justify-content: center;
-    margin-top: 40px;
+    margin-top: 0;
   }
   .app-embed-frame iframe {
     flex: 0 0 480px;
@@ -424,13 +442,31 @@
     margin: 0 auto 20px;
   }
 
+  .photo-ring {
+    position: relative;
+    width: 190px; height: 190px;
+    margin: 56px auto 32px;
+  }
+  .photo-ring::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--green);
+    opacity: 0.4;
+    animation: photo-pulse 2.4s ease-out infinite;
+  }
+  @keyframes photo-pulse {
+    0% { transform: scale(1); opacity: 0.4; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
   .closing .photo {
-    width: 160px; height: 160px;
+    position: relative;
+    z-index: 1;
+    width: 190px; height: 190px;
     border-radius: 50%;
     object-fit: cover;
-    margin: 56px auto 32px;
     filter: grayscale(1) contrast(1.05);
-    border: 3px solid rgba(255,255,255,0.2);
   }
   .closing .signature {
     width: 460px;
@@ -447,6 +483,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
+    .embed-arrow, .photo-ring::before { animation: none !important; }
   }
 </style>
 </head>
@@ -456,10 +493,16 @@
 <header class="hero">
   <div class="hero-inner">
     <h1>A case study in<br><span class="accent">AI-native</span> design.</h1>
-    <p class="lede">A case study: a real product-launch brief — landing page, mobile app, and investor pitch for a smart wine accessory — designed and shipped in under three hours, using AI tools end to end.</p>
+    <p class="lede">A real product-launch brief — landing page, mobile app, and investor pitch for a smart wine accessory — designed and shipped in under three hours, using AI tools end to end.</p>
 
     <div class="stat-row">
-      <div class="stat"><div class="num">~3 hrs</div><div class="label">Hands-on, total</div></div>
+      <div class="stat">
+        <div class="num num-with-icon">
+          <svg class="stat-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+          ~3 hrs
+        </div>
+        <div class="label">Hands-on, total</div>
+      </div>
       <div class="stat"><div class="num">3</div><div class="label">Live deliverables</div></div>
       <div class="stat"><div class="num">0</div><div class="label">Lines hand-coded</div></div>
     </div>
@@ -543,7 +586,7 @@
 <!-- ============ KPI / VELOCITY (plain) ============ -->
 <section class="plain-section" id="kpi">
   <div class="section-inner">
-    <h2>How fast, really</h2>
+    <h2 class="heading-with-icon"><svg viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>How fast, really</h2>
 
     <div class="kpi-row">
       <div class="stat"><div class="num">~3 hrs</div><div class="label">Total time</div></div>
@@ -567,6 +610,7 @@
 <!-- ============ LANDING PAGE — FULL WIDTH EMBED ============ -->
 <div class="embed-heading" id="landing-embed">
   <h2>What actually shipped: the landing page.</h2>
+  <div class="embed-arrow">↓</div>
 </div>
 <div class="embed-full">
   <iframe id="landing-iframe" src="index.html" title="Live landing page" loading="lazy" scrolling="no" onload="autosizeIframe(this)"></iframe>
@@ -575,8 +619,9 @@
 <!-- ============ MOBILE APP EMBED ============ -->
 <div class="embed-heading app-section" id="app-embed">
   <h2>What actually shipped: the mobile app.</h2>
+  <div class="embed-arrow">↓</div>
 </div>
-<section class="plain-section app-section">
+<section class="plain-section app-section app-section-tight">
   <div class="section-inner">
     <div class="app-embed-frame">
       <iframe src="app/index.html" title="Live mobile app prototype" loading="lazy"></iframe>
@@ -609,8 +654,10 @@
 <!-- ============ CLOSING / SIGN-OFF (dark bookend) ============ -->
 <section class="closing">
   <div class="section-inner">
-    <h2>This page is the proof — built the exact same way, end to end, with Claude.</h2>
-    <img class="photo" src="case-study-assets/photo.png" alt="Marcel Dziedzic">
+    <h2>This isn't a description of the process — it's the process. Built live, end to end, with Claude.</h2>
+    <div class="photo-ring">
+      <img class="photo" src="case-study-assets/photo.png" alt="Marcel Dziedzic">
+    </div>
     <img class="signature" src="case-study-assets/signature.png" alt="Signature — Marcel Dziedzic">
   </div>
 </section>
